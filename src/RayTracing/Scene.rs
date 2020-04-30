@@ -26,14 +26,14 @@ impl Scene {
             for x in 0..window.width {
                 for y in 0..window.height {
                     let color1 = Rgb {
-                        r: 255.0,
-                        g: 255.0,
-                        b: 255.0
+                        r: 1.0,
+                        g: 1.0,
+                        b: 1.0
                     };
                     let color2 = Rgb{
-                        r: 40.0,
-                        g: 40.0,
-                        b: 170.0
+                        r: 0.15,
+                        g: 0.15,
+                        b: 0.7
                     };
                     gradient_buffer.push(color1.mix(color2, x as f32 / window.width as f32).to_int());
                     index += 1;
@@ -51,9 +51,9 @@ impl Scene {
 
                             let normal = (ray.get_point(distance) - Vec3 { x: 0.0, y: 0.0, z: sphere.radius }).to_unit_vector();
                             return ColorEnum::Color( Rgb { // this is temp
-                                r: ((0.5 * (normal.x + 1.0)) * 255.0) as i32 as f32,
-                                g: ((0.5 * (normal.y + 1.0)) * 255.0) as i32 as f32,
-                                b: ((0.5 * (normal.z + 1.0)) * 255.0) as i32 as f32
+                                r: 0.5 * (normal.x + 1.0),
+                                g: 0.5 * (normal.y + 1.0),
+                                b: 0.5 * (normal.z + 1.0)
                             })
                         }
                         _ => {
