@@ -48,10 +48,12 @@ impl Scene {
                 ObjectEnum::Sphere(sphere) => {
                     match sphere.intersection(ray) {
                         DistEnum::Distance(distance) => {
+
+                            let normal = (ray.get_point(distance) - Vec3 { x: 0.0, y: 0.0, z: sphere.radius }).to_unit_vector();
                             return ColorEnum::Color( Rgb { // this is temp
-                                r: 255.0,
-                                g: 0.0,
-                                b: 0.0
+                                r: ((0.5 * (normal.x + 1.0)) * 255.0) as i32 as f32,
+                                g: ((0.5 * (normal.y + 1.0)) * 255.0) as i32 as f32,
+                                b: ((0.5 * (normal.z + 1.0)) * 255.0) as i32 as f32
                             })
                         }
                         _ => {
