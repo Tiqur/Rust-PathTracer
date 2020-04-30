@@ -9,4 +9,4 @@ impl Point2D {
     pub fn as_buffer(&self, window: Window) -> u32 {
         return (window.width as i32 * self.y + self.x) as u32;
     }
-} 
+}

@@ -89,6 +89,7 @@ impl MulAssign for Vec3 {  /* *= */
 }
 
 impl Vec3 {
+
     // mixes two points using linear interpolation
     pub fn mix(&self, other: Vec3, t: f32) -> Vec3 {
         return Vec3 {
@@ -100,12 +101,12 @@ impl Vec3 {
 
     // returns the distance between two vec3s
     pub fn dist(&self, other: Vec3) -> f32 {
-        return (sqr(other.x - self.x) + sqr(other.y - self.y) + sqr(other.z - self.z)).sqrt()
+        return (sqr(self.x - other.x) + sqr(self.y * other.y) + sqr(self.z * other.z)).sqrt()
     }
 
     // returns the dot product of two vec3s
     pub fn dot(&self, other: Vec3) -> f32 {
-        return (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
+        return self.x * other.x + self.y * other.y + self.z * other.z;
     }
     // gets the magnitude ( length ) of a vec squared
     pub fn get_magnitude_squared(&self) -> f32 {
@@ -114,11 +115,11 @@ impl Vec3 {
 
     // gets the magnitude ( length ) of a vec
     pub fn get_magnitude(&self) -> f32 {
-        return (self.get_magnitude_squared()).sqrt();
+        return self.get_magnitude_squared().sqrt();
     }
 
     // normalizes vec3
-    pub fn normalized(&self) -> Vec3 {
+    pub fn to_unit_vector(&self) -> Vec3 {
         let mag = self.get_magnitude();
         return Vec3 {
             x: self.x / mag,
@@ -126,4 +127,13 @@ impl Vec3 {
             z: self.z / mag,
         }
     }
-} 
+
+    // returns cross product
+    pub fn cross(&self, other: Vec3) -> Vec3 {
+        return Vec3 {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x
+        }
+    }
+}

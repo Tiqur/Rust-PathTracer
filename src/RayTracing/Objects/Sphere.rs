@@ -13,8 +13,9 @@ impl Shape for Sphere {
     fn intersection(&self, ray: Ray) -> DistEnum {
         let mut record_hit;
         let oc = ray.origin - self.pos;
+        let a = ray.direction.get_magnitude_squared();
         let b = ray.direction.dot(oc);
-        let c = oc.dot(oc) - (self.radius * self.radius);
+        let c = oc.get_magnitude_squared() - (self.radius * self.radius);
         let mut delta = b * b - c;
         record_hit = delta > 0.0;
         if record_hit {
@@ -29,4 +30,4 @@ impl Shape for Sphere {
         }
         return DistEnum::False(false)
     }
-} 
+}

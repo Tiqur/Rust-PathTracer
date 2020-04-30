@@ -14,4 +14,4 @@ impl Ray {
             z: self.origin.z + t * self.direction.z
         };
     }
-} 
+}

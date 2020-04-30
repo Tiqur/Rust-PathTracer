@@ -6,6 +6,7 @@ use crate::Classes::Rgb::Rgb;
 use crate::RayTracing::Camera::Camera;
 use crate::RayTracing::Traits::Shape::Shape;
 use crate::RayTracing::Enums::DistEnum::DistEnum;
+use crate::Classes::Point2D::Point2D;
 
 pub struct Scene {
     pub camera: Camera,
@@ -34,7 +35,7 @@ impl Scene {
                         g: 40.0,
                         b: 170.0
                     };
-                    gradient_buffer.push(color1.mix(color2, x as f32/ window.width as f32).to_int());
+                    gradient_buffer.push(color1.mix(color2, x as f32 / window.width as f32).to_int());
                     index += 1;
                 }
             }
@@ -47,15 +48,14 @@ impl Scene {
                 ObjectEnum::Sphere(sphere) => {
                     match sphere.intersection(ray) {
                         DistEnum::Distance(distance) => {
-                            //println!("Intersection");
-                            return ColorEnum::Color( Rgb{ // this is temp
+                            return ColorEnum::Color( Rgb { // this is temp
                                 r: 255.0,
                                 g: 0.0,
                                 b: 0.0
                             })
                         }
                         _ => {
-                            
+
                         }
                     }
                 }
@@ -71,18 +71,8 @@ impl Scene {
         let mut index = 0;
         for y in 0..window.height {
             for x in 0..window.width {
-                let width = window.width as i32;
-                let height = window.height as i32;
-                let ray = Ray {
-                    origin: self.camera.pos,
-                    direction: Vec3 {
-                        x: (x as f32 / width as f32 * 2.0 - (width / height) as f32) as f32,
-                        y: (y as f32 / width as f32 * 2.0 - 1.0) as f32,
-                        z: 1.0
-                    }.normalized()
-                };
-               // println!("{} {} {}", ray.direction.x, ray.direction.y, ray.direction.z);
 
+               let ray = self.camera.get_ray(x as f32, y as f32, &window);
 
                 // ColorEnum
                 match self.ray_trace(ray) {
@@ -93,7 +83,6 @@ impl Scene {
                         window.secondary_buffer[index] = gradient_background_buffer[index];
                     }
                 }
-
                 index += 1;
             }
         }

@@ -70,4 +70,4 @@ impl Window {
     pub fn set_buffer(&mut self, vec: Vec<u32>) {
         self.secondary_buffer = vec.clone()
     }
-} 
+}

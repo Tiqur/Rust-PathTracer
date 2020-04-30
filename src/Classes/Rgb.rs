@@ -1,3 +1,4 @@
+
 pub struct Rgb {
     pub r: f32,
     pub g: f32,
@@ -18,4 +19,4 @@ impl Rgb {
             b: ( self.b + (c.b - self.b) * t ) as i32 as f32
         }
     }
-} 
+}

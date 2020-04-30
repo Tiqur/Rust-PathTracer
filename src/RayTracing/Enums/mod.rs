@@ -1,2 +1,2 @@
 pub mod ObjectEnum;
-pub mod DistEnum; 
+pub mod DistEnum;
