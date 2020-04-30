@@ -105,7 +105,7 @@ impl Vec3 {
 
     // returns the dot product of two vec3s
     pub fn dot(&self, other: Vec3) -> f32 {
-        return (self.x * other.x) + (self.y + other.y) + (self.z + other.z)
+        return (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
     }
     // gets the magnitude ( length ) of a vec squared
     pub fn get_magnitude_squared(&self) -> f32 {

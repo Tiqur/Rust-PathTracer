@@ -4,15 +4,12 @@ use crate::RayTracing::Ray::Ray;
 use crate::Classes::Vec3::Vec3;
 use crate::Classes::Rgb::Rgb;
 use crate::RayTracing::Camera::Camera;
+use crate::RayTracing::Traits::Shape::Shape;
+use crate::RayTracing::Enums::DistEnum::DistEnum;
 
 pub struct Scene {
     pub camera: Camera,
     pub objects: Vec<ObjectEnum>
-}
-
-enum DistEnum {
-    Distance(f32),
-    False(bool)
 }
 
 enum ColorEnum {
@@ -45,16 +42,29 @@ impl Scene {
     }
 
     fn ray_trace(&self, ray: Ray) -> ColorEnum {
-        // send out ray
-        // for each object check for intersection
-        // if intersection:
-        //      emit color of object or whatever
-        // else:
-        //      background gradient color
+        for obj in &self.objects {
+            match obj {
+                ObjectEnum::Sphere(sphere) => {
+                    match sphere.intersection(ray) {
+                        DistEnum::Distance(distance) => {
+                            //println!("Intersection");
+                            return ColorEnum::Color( Rgb{ // this is temp
+                                r: 255.0,
+                                g: 0.0,
+                                b: 0.0
+                            })
+                        }
+                        _ => {
+                            
+                        }
+                    }
+                }
+            }
+        }
         return ColorEnum::False(false);
     }
 
-    pub fn render(&self, mut window: &mut Window) {
+    pub fn render(&self, window: &mut Window) {
         // caches background values
         let gradient_background_buffer = self.get_background_gradient(window);
 
@@ -66,11 +76,13 @@ impl Scene {
                 let ray = Ray {
                     origin: self.camera.pos,
                     direction: Vec3 {
-                        x: (x as i32 / height * 2 - width / height) as f32,
-                        y: (y as i32 / height * 2 - 1) as f32,
+                        x: (x as f32 / width as f32 * 2.0 - (width / height) as f32) as f32,
+                        y: (y as f32 / width as f32 * 2.0 - 1.0) as f32,
                         z: 1.0
                     }.normalized()
                 };
+               // println!("{} {} {}", ray.direction.x, ray.direction.y, ray.direction.z);
+
 
                 // ColorEnum
                 match self.ray_trace(ray) {
@@ -86,4 +98,4 @@ impl Scene {
             }
         }
     }
-} 
+}

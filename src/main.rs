@@ -14,6 +14,8 @@ use RayTracing::Scene::Scene;
 
 use std::time::*;
 use std::thread;
+use crate::RayTracing::Objects::Sphere::Sphere;
+use crate::RayTracing::Enums::ObjectEnum::ObjectEnum;
 
 fn main() {
     let width = 1200;
@@ -35,7 +37,14 @@ fn main() {
                 z: 0.0
             }
         },
-        objects: vec![]
+        objects: vec![
+            ObjectEnum::Sphere( Sphere {
+                pos: Vec3 {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 20.0
+                }, radius: 4.0 })
+        ]
     };
 
     scene.render(&mut window);
