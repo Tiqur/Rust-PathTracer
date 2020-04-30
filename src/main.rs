@@ -3,7 +3,6 @@ use minifb::WindowOptions;
 
 mod Classes;
 use Classes::Vec3::Vec3;
-use Classes::Ray::Ray;
 use Classes::Rgb::Rgb;
 
 fn main() {
