@@ -88,6 +88,18 @@ impl MulAssign for Vec3 {  /* *= */
     }
 }
 
+impl Neg for Vec3 {
+    type Output = Vec3;
+    fn neg(mut self) -> Vec3 {
+        return Vec3 {
+            x: self.x * -1.0,
+            y: self.y * -1.0,
+            z: self.z * -1.0
+        }
+    }
+}
+
+
 impl Vec3 {
 
     // mixes two points using linear interpolation

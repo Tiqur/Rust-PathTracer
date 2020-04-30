@@ -3,13 +3,9 @@ use minifb::{WindowOptions, Key, KeyRepeat};
 
 mod Classes;
 use Classes::Vec3::Vec3;
-use Classes::Rgb::Rgb;
-use Classes::Point2D::Point2D;
 
 mod RayTracing;
-use RayTracing::Ray::Ray;
 use RayTracing::Camera::Camera;
-use RayTracing::Traits::Shape::Shape;
 use RayTracing::Scene::Scene;
 
 use std::time::*;
@@ -49,11 +45,21 @@ fn main() {
                 },
                 radius: 5.0
             })
-
         ]
     };
 
 
+
+        // for z in 0..10 {
+        //     scene.objects.push(ObjectEnum::Sphere(Sphere {
+        //         pos: Vec3 {
+        //             x: 0.0,
+        //             y: 0.0,
+        //             z: ((z * 4) * 2 + 30) as f32
+        //         },
+        //         radius: 4.0 * z as f32
+        //     }))
+        // }
 
 
 
