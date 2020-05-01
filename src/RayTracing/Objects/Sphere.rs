@@ -19,7 +19,7 @@ impl Shape for Sphere {
 
         let discriminant = b * b - a * c;
 
-        if discriminant > 0.0 {  // if intersection
+        if discriminant >= 0.0 {  // if intersection
 
             let distance = (-b - discriminant.sqrt()) / (2.0 * a);
 
@@ -34,7 +34,7 @@ impl Shape for Sphere {
                 hit_record.closest_point = point;
 
                 if ray.direction.dot(normal) > 0.0 {
-                    hit_record.normal = -normal;
+                    hit_record.normal = normal;
                     hit_record.front_face = false;
                 } else {
                     hit_record.normal = normal;

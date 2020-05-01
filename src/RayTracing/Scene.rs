@@ -6,6 +6,8 @@ use crate::Classes::Rgb::Rgb;
 use crate::RayTracing::Camera::Camera;
 use crate::RayTracing::Traits::Shape::Shape;
 use crate::RayTracing::HitRecord::HitRecord;
+extern crate rand;
+use rand::Rng;
 
 pub struct Scene {
     pub camera: Camera,
@@ -77,24 +79,54 @@ impl Scene {
         return ColorEnum::False(false);
     }
 
-    pub fn render(&self, window: &mut Window) {
+    pub fn render(&self, window: &mut Window, samples_per_pixel: i32) {
+        // initialize rng generator
+        let mut rng = rand::thread_rng();
         // caches background values
         let gradient_background_buffer = self.get_background_gradient(window);
 
         let mut index = 0;
+        // sends out rays
         for y in 0..window.height {
+
             for x in 0..window.width {
 
-               let ray = self.camera.get_ray(x as f32, y as f32, &window);
-                // ColorEnum
-                match self.ray_trace(ray) {
-                    ColorEnum::Color(color) => {
-                        window.secondary_buffer[index] = color.to_int();
-                    },
-                    ColorEnum::False(_f) => {
-                        window.secondary_buffer[index] = gradient_background_buffer[index];
+                // actual pixel color after anti aliasing
+                let mut pixel_color = Rgb {..Default::default()};
+
+                // anti aliasing
+                for a in 0..samples_per_pixel {
+
+                    let mut x_rand = x as f32 ;
+                    let mut y_rand = y as f32;
+
+                    if samples_per_pixel > 1 {
+                        x_rand += rng.gen_range(0.0, 1.0);
+                        y_rand += rng.gen_range(0.0, 1.0);
                     }
+
+                    let ray = self.camera.get_ray(x_rand, y_rand, &window);
+
+
+                    let mut sample_color = Rgb {..Default::default()};
+
+                    // ColorEnum
+                    match self.ray_trace(ray) {
+                        ColorEnum::Color(c) => {
+                            sample_color = c;
+                           // window.secondary_buffer[index] = color.to_int();
+                        },
+                        ColorEnum::False(_f) => {
+                            Rgb {..Default::default()};
+                            //sample_color = gradient_background_buffer[index];
+                           // window.secondary_buffer[index] = gradient_background_buffer[index];
+                        }
+                    };
+
+                    pixel_color += sample_color;
+
                 }
+                window.secondary_buffer[index] = pixel_color.div(samples_per_pixel as f32).to_int();
                 index += 1;
             }
         }

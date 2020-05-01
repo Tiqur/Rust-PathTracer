@@ -16,6 +16,7 @@ use crate::RayTracing::Enums::ObjectEnum::ObjectEnum;
 fn main() {
     let width = 1200;
     let height = 800;
+    let samples_per_pixel = 10;
     // let threads = 2;  will multithread eventually
 
     let mut window = Classes::Window::Window {
@@ -85,7 +86,7 @@ fn main() {
 
         while minifb_window.is_open() && !minifb_window.is_key_down(minifb::Key::Escape) {
             let now = Instant::now();
-            scene.render(&mut window);
+            scene.render(&mut window, samples_per_pixel);
             minifb_window.set_title(&now.elapsed().as_secs_f64().to_string());
             window.swap_buffers();
 
