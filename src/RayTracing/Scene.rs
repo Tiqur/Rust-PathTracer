@@ -21,8 +21,8 @@ enum ColorEnum {
 
 impl Scene {
 
-    fn get_background_gradient(&self, window: &mut Window) -> Vec<u32> {
-        let mut gradient_buffer = Vec::new();
+    fn get_background_gradient(&self, window: &mut Window) -> Vec<Rgb> {
+        let mut gradient_rgb_buffer = Vec::new();
         let mut index = 0;
 
         let color1 = Rgb{
@@ -39,12 +39,12 @@ impl Scene {
 
         for y in 0..window.height {
             for _x in 0..window.width {
-            gradient_buffer.push(color1.mix(&color2, y as f32 / window.width as f32).to_int());
+                gradient_rgb_buffer.push(color1.mix(&color2, y as f32 / window.width as f32));
             index += 1;
             }
         }
 
-        return gradient_buffer;
+        return gradient_rgb_buffer;
 
     }
 
@@ -114,12 +114,10 @@ impl Scene {
                     match self.ray_trace(ray) {
                         ColorEnum::Color(c) => {
                             sample_color = c;
-                           // window.secondary_buffer[index] = color.to_int();
                         },
                         ColorEnum::False(_f) => {
                             Rgb {..Default::default()};
-                            //sample_color = gradient_background_buffer[index];
-                           // window.secondary_buffer[index] = gradient_background_buffer[index];
+                           sample_color = gradient_background_buffer[index];
                         }
                     };
 
