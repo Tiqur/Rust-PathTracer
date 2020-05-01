@@ -31,7 +31,7 @@ fn main() {
             pos: Vec3 {
                 x: 0.0,
                 y: 0.0,
-                z: -1.0
+                z: -20.0
             },
             fov: 30.0,
             aspect_ratio: width as f32 / height as f32
@@ -44,6 +44,14 @@ fn main() {
                     z: 20.0
                 },
                 radius: 5.0
+            }),
+            ObjectEnum::Sphere(Sphere {
+                pos: Vec3 {
+                    x: 0.0,
+                    y: -505.0,
+                    z: 20.0
+                },
+                radius: 500.0
             })
         ]
     };

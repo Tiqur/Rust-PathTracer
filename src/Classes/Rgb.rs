@@ -12,7 +12,7 @@ impl Rgb {
     }
 
     // mixes two colors using linear interpolation
-    pub fn mix(&self, c: Rgb, t: f32) -> Rgb {
+    pub fn mix(&self, c: &Rgb, t: f32) -> Rgb {
         return Rgb {
             r: ( self.r + (c.r - self.r) * t ),
             g: ( self.g + (c.g - self.g) * t ),

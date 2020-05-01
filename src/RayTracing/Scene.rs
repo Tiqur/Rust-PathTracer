@@ -22,57 +22,54 @@ impl Scene {
     fn get_background_gradient(&self, window: &mut Window) -> Vec<u32> {
         let mut gradient_buffer = Vec::new();
         let mut index = 0;
+
+        let color1 = Rgb{
+            r: 0.35,
+            g: 0.35,
+            b: 0.7
+        };
+
+        let color2 = Rgb {
+            r: 1.0,
+            g: 1.0,
+            b: 1.0
+        };
+
         for y in 0..window.height {
             for _x in 0..window.width {
-                let color1 = Rgb {
-                    r: 1.0,
-                    g: 1.0,
-                    b: 1.0
-                };
-                let color2 = Rgb{
-                    r: 0.15,
-                    g: 0.15,
-                    b: 0.7
-                };
-            gradient_buffer.push(color1.mix(color2, y as f32 / window.width as f32).to_int());
+            gradient_buffer.push(color1.mix(&color2, y as f32 / window.width as f32).to_int());
             index += 1;
             }
         }
+
         return gradient_buffer;
+
     }
 
     fn ray_trace(&self, ray: Ray) -> ColorEnum {
-        let mut hit = false;
-        let mut hit_record = HitRecord {..Default::default()};
+        let mut ray_hit_record = HitRecord {..Default::default()};
         for obj in &self.objects {
             match obj {
                 // sphere
                 ObjectEnum::Sphere(sphere) => {
-
-                    let distance =  sphere.intersection(ray);
-
+                    // passed in distance to check if closer before doing any unnecessary calculations.
+                    let object_hit_record =  sphere.intersection(ray, ray_hit_record.distance);
                     // if intersection
-                    if distance > 0.0 {
-                        let point = ray.get_point(distance);
-                        let normal = point.to_unit_vector();
-
-                        if !hit || distance < hit_record.distance {
-                            hit = true;
-                            hit_record.distance = distance;
-                            hit_record.closest_point = point;
-                            hit_record.normal = normal;
+                    if object_hit_record.hit {
+                        // if no previous intersection or new intersection is closer
+                        if !ray_hit_record.hit || object_hit_record.distance < ray_hit_record.distance {
+                            ray_hit_record = object_hit_record;
                         }
-
                     }
                 }
             }
         }
 
-        if hit {
+        if ray_hit_record.hit  {
             return ColorEnum::Color( Rgb { // this is temp
-                r: 0.5 * (hit_record.normal.x + 1.0),
-                g: 0.5 * (hit_record.normal.y + 1.0),
-                b: 0.5 * (hit_record.normal.z + 1.0)
+                r: 0.5 * (ray_hit_record.normal.x + 1.0),
+                g: 0.5 * (ray_hit_record.normal.y + 1.0),
+                b: 0.5 * (ray_hit_record.normal.z + 1.0)
             })
         }
 
