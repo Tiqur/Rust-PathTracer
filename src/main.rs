@@ -5,8 +5,8 @@ mod Classes;
 use Classes::Vec3::Vec3;
 
 mod PathTracing;
-use PathTracing::Camera::Camera;
-use PathTracing::Scene::Scene;
+use crate::PathTracing::Classes::Camera::Camera;
+use PathTracing::Classes::Scene::Scene;
 
 use std::time::*;
 use std::thread;
@@ -78,7 +78,7 @@ fn main() {
 
 
         let mut minifb_window = minifb::Window::new(
-            "Rust-PathTracer - Written by Tiqur",
+            "Rust-PathTracer",
             width,
             height,
             WindowOptions::default()

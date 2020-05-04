@@ -1,8 +1,8 @@
 use crate::Classes::Vec3::Vec3;
 use crate::PathTracing::Traits::Shape::Shape;
 use crate::Classes::Rgb::Rgb;
-use crate::PathTracing::Ray::Ray;
-use crate::PathTracing::HitRecord::HitRecord;
+use crate::PathTracing::Classes::Ray::Ray;
+use crate::PathTracing::Classes::HitRecord::HitRecord;
 use crate::PathTracing::Material::Material;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 

@@ -1,5 +1,5 @@
 use crate::Classes::Vec3::Vec3;
-use crate::PathTracing::Ray::Ray;
+use crate::PathTracing::Classes::Ray::Ray;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 use crate::PathTracing::Objects::Sphere::Sphere;
 use crate::Classes::Rgb::Rgb;

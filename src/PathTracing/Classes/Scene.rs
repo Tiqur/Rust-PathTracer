@@ -1,11 +1,11 @@
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 use crate::Classes::Window::Window;
-use crate::PathTracing::Ray::Ray;
+use crate::PathTracing::Classes::Ray::Ray;
 use crate::Classes::Vec3::Vec3;
 use crate::Classes::Rgb::Rgb;
-use crate::PathTracing::Camera::Camera;
+use crate::PathTracing::Classes::Camera::Camera;
 use crate::PathTracing::Traits::Shape::Shape;
-use crate::PathTracing::HitRecord::HitRecord;
+use crate::PathTracing::Classes::HitRecord::HitRecord;
 extern crate rand;
 use rand::Rng;
 

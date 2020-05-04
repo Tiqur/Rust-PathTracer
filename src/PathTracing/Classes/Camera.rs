@@ -1,5 +1,5 @@
 use crate::Classes::Vec3::Vec3;
-use crate::PathTracing::Ray::Ray;
+use crate::PathTracing::Classes::Ray::Ray;
 use crate::Classes::Window::Window;
 
 pub struct Camera {
