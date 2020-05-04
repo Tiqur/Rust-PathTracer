@@ -3,10 +3,13 @@ use crate::PathTracing::Traits::Shape::Shape;
 use crate::Classes::Rgb::Rgb;
 use crate::PathTracing::Ray::Ray;
 use crate::PathTracing::HitRecord::HitRecord;
+use crate::PathTracing::Material::Material;
+use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 
 pub struct Sphere {
     pub pos: Vec3,
-    pub radius: f32
+    pub radius: f32,
+    pub material: Material
 }
 
 impl Shape for Sphere {
@@ -27,6 +30,7 @@ impl Shape for Sphere {
                 hit_record.distance = if t0 < t1 {t0} else {t1};
                 hit_record.closest_point = ray.get_point(hit_record.distance);
                 hit_record.normal = (hit_record.closest_point - self.pos).to_unit_vector();
+                hit_record.color = self.material.color;
             }
         }
         return hit_record;

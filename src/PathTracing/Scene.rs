@@ -26,15 +26,15 @@ impl Scene {
         let mut index = 0;
 
         let color1 = Rgb{
-            r: 0.04,
-            g: 0.04,
-            b: 0.3
+            r: 0.35,
+            g: 0.35,
+            b: 0.7
         };
 
         let color2 = Rgb {
-            r: 0.0,
-            g: 0.0,
-            b: 0.0
+            r: 1.0,
+            g: 1.0,
+            b: 1.0
         };
 
         for y in 0..window.height {
@@ -68,11 +68,12 @@ impl Scene {
         }
 
         if ray_hit_record.hit  {
-            return ColorEnum::Color( Rgb { // this is temp
-                r: 0.5 * (ray_hit_record.normal.x + 1.0),
-                g: 0.5 * (ray_hit_record.normal.y + 1.0),
-                b: 0.5 * (ray_hit_record.normal.z + 1.0)
-            })
+            return ColorEnum::Color(ray_hit_record.color);
+            // return ColorEnum::Color( Rgb { // this is temp
+            //     r: 0.5 * (ray_hit_record.normal.x + 1.0),
+            //     g: 0.5 * (ray_hit_record.normal.y + 1.0),
+            //     b: 0.5 * (ray_hit_record.normal.z + 1.0)
+            // })
         }
 
 

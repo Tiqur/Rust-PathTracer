@@ -1,11 +1,15 @@
 use crate::Classes::Vec3::Vec3;
 use crate::PathTracing::Ray::Ray;
+use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
+use crate::PathTracing::Objects::Sphere::Sphere;
+use crate::Classes::Rgb::Rgb;
 
 pub struct HitRecord {
     pub closest_point: Vec3,
     pub normal: Vec3,
     pub distance: f32,
-    pub hit: bool
+    pub hit: bool,
+    pub color: Rgb
 }
 
 impl Default for HitRecord {
@@ -22,7 +26,8 @@ impl Default for HitRecord {
                 z: 0.0
             },
             distance: -1.0,
-            hit: false
+            hit: false,
+            color: Rgb {..Default::default()}
         }
     }
 }

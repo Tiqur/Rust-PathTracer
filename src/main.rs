@@ -12,6 +12,8 @@ use std::time::*;
 use std::thread;
 use crate::PathTracing::Objects::Sphere::Sphere;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
+use crate::PathTracing::Material::Material;
+use crate::Classes::Rgb::Rgb;
 
 fn main() {
     let width = 1200;
@@ -44,7 +46,14 @@ fn main() {
                     y: 0.0,
                     z: 0.0
                 },
-                radius: 5.0
+                radius: 5.0,
+                material: Material {
+                    color: Rgb {
+                        r: 0.5,
+                        g: 1.0,
+                        b: 1.0
+                    }
+                }
             }),
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
@@ -52,7 +61,8 @@ fn main() {
                     y: -505.0,
                     z: 0.0
                 },
-                radius: 500.0
+                radius: 500.0,
+                material: Default::default()
             })
         ]
     };
