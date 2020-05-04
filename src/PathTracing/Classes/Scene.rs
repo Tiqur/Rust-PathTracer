@@ -8,6 +8,7 @@ use crate::PathTracing::Traits::Shape::Shape;
 use crate::PathTracing::Classes::HitRecord::HitRecord;
 extern crate rand;
 use rand::Rng;
+use crate::PathTracing::Functions::progress_bar::progress_bar;
 
 pub struct Scene {
     pub camera: Camera,
@@ -81,6 +82,8 @@ impl Scene {
     }
 
     pub fn render(&self, window: &mut Window, samples_per_pixel: i32) {
+
+
         // initialize rng generator
         let mut rng = rand::thread_rng();
         // caches background values
@@ -90,6 +93,9 @@ impl Scene {
         // sends out rays
         for y in 0..window.height {
 
+            print!("{}[2J", 27 as char);  // this will only clear line in a normal terminal
+            println!("{}\n{}", "Starting render...", progress_bar(y as i32, window.height as i32, 30));
+
             for x in 0..window.width {
 
                 // actual pixel color after anti aliasing
@@ -98,7 +104,7 @@ impl Scene {
                 // anti aliasing
                 for a in 0..samples_per_pixel {
 
-                    let mut x_rand = x as f32 ;
+                    let mut x_rand = x as f32;
                     let mut y_rand = y as f32;
 
                     if samples_per_pixel > 1 {
