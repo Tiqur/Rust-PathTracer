@@ -18,7 +18,7 @@ use crate::Classes::Rgb::Rgb;
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 1;
+    let samples_per_pixel = 64;
     // let threads = 2;  will multithread eventually
 
     let mut window = Classes::Window::Window {
@@ -90,34 +90,7 @@ fn main() {
 
         while minifb_window.is_open() && !minifb_window.is_key_down(minifb::Key::Escape) {
             window.swap_buffers();
-
-            minifb_window.get_scroll_wheel().map(|scroll| {
-                if scroll.1 > 0.0 {
-                    scene.camera.pos.z += 400.0;
-                } else {
-                    scene.camera.pos.z -= 400.0;
-                }
-            });
-
-            minifb_window.get_keys_pressed(KeyRepeat::Yes).map(|keys| {
-                for t in keys {
-                    match t {
-                        Key::W => {  // i know this doesn't exactly work the way it should
-                            scene.camera.pos.y += 1.0;
-                        },
-                        Key::A => {
-                            scene.camera.pos.x -= 1.0;
-                        },
-                        Key::S => {
-                            scene.camera.pos.y -= 1.0;
-                        },
-                        Key::D => {
-                            scene.camera.pos.x += 1.0;
-                        },
-                        _ => (),
-                    }
-                }
-            });
+            
             minifb_window.update_with_buffer(&window.primary_buffer, width, height)
                 .unwrap();
         }
