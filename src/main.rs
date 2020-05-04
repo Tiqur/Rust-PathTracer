@@ -12,13 +12,17 @@ use std::time::*;
 use std::thread;
 use crate::PathTracing::Objects::Sphere::Sphere;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
-use crate::PathTracing::Material::Material;
 use crate::Classes::Rgb::Rgb;
+use crate::PathTracing::Classes::Material::Material;
+use crate::PathTracing::Enums::TextureEnum::TextureEnum;
+use crate::PathTracing::Textures::Base::Base;
+use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
+use crate::PathTracing::Materials::Matte::Matte;
 
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 2000;
+    let samples_per_pixel = 100;
     // let threads = 2;  will multithread eventually
 
     let mut window = Classes::Window::Window {
@@ -48,11 +52,14 @@ fn main() {
                 },
                 radius: 5.0,
                 material: Material {
-                    color: Rgb {
-                        r: 0.5,
-                        g: 1.0,
-                        b: 1.0
-                    }
+                    material: MaterialEnum::Matte(Matte {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 0.0,
+                            g: 0.0,
+                            b: 1.0
+                        }
+                    })
                 }
             }),
             ObjectEnum::Sphere(Sphere {
@@ -62,7 +69,16 @@ fn main() {
                     z: 0.0
                 },
                 radius: 500.0,
-                material: Default::default()
+                material: Material {
+                    material: MaterialEnum::Matte(Matte {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 0.0,
+                            g: 1.0,
+                            b: 1.0
+                        }
+                    })
+                }
             })
         ]
     };
