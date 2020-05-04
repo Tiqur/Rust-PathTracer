@@ -9,6 +9,7 @@ use crate::PathTracing::Classes::HitRecord::HitRecord;
 extern crate rand;
 use rand::Rng;
 use crate::PathTracing::Functions::progress_bar::progress_bar;
+use console::Term;
 
 pub struct Scene {
     pub camera: Camera,
@@ -92,8 +93,8 @@ impl Scene {
         let mut index = 0;
         // sends out rays
         for y in 0..window.height {
-
-            print!("{}[2J", 27 as char);  // this will only clear line in a normal terminal
+            let term = Term::stdout();
+            term.clear_screen();
             println!("{}\n{}", "Starting render...", progress_bar(y as i32, window.height as i32, 30));
 
             for x in 0..window.width {
