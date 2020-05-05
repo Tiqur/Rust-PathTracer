@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div};
+use std::ops::{AddAssign};
 #[derive(Copy, Clone)]
 pub struct Rgb {
     pub r: f32,

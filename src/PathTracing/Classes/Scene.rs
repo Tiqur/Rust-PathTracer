@@ -1,7 +1,6 @@
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 use crate::Classes::Window::Window;
 use crate::PathTracing::Classes::Ray::Ray;
-use crate::Classes::Vec3::Vec3;
 use crate::Classes::Rgb::Rgb;
 use crate::PathTracing::Classes::Camera::Camera;
 use crate::PathTracing::Traits::Shape::Shape;
@@ -25,7 +24,6 @@ impl Scene {
 
     fn get_background_gradient(&self, window: &mut Window) -> Vec<Rgb> {
         let mut gradient_rgb_buffer = Vec::new();
-        let mut index = 0;
 
         let color1 = Rgb{
             r: 0.35,
@@ -42,7 +40,6 @@ impl Scene {
         for y in 0..window.height {
             for _x in 0..window.width {
                 gradient_rgb_buffer.push(color1.mix(&color2, y as f32 / window.width as f32));
-            index += 1;
             }
         }
 
@@ -51,35 +48,33 @@ impl Scene {
     }
 
     fn ray_trace(&self, ray: Ray) -> ColorEnum {
-        let mut ray_hit_record = HitRecord {..Default::default()};
+        let mut record = HitRecord {..Default::default()};
         for obj in &self.objects {
+
             match obj {
-                // sphere
                 ObjectEnum::Sphere(sphere) => {
-                    // passed in distance to check if closer before doing any unnecessary calculations.
                     let object_hit_record =  sphere.intersection(ray);
                     // if intersection
                     if object_hit_record.hit {
                         // if no previous intersection or new intersection is closer
-                        if !ray_hit_record.hit || object_hit_record.distance < ray_hit_record.distance {
-                            ray_hit_record = object_hit_record;
+                        if !record.hit || object_hit_record.distance < record.distance {
+                            record = object_hit_record;
                         }
                     }
                 }
             }
+
         }
 
-        if ray_hit_record.hit  {
-            return ColorEnum::Color(ray_hit_record.color);
-            // return ColorEnum::Color( Rgb { // this is temp
+
+            // ray_hit_record.color = Rgb { // this is for testing
             //     r: 0.5 * (ray_hit_record.normal.x + 1.0),
             //     g: 0.5 * (ray_hit_record.normal.y + 1.0),
             //     b: 0.5 * (ray_hit_record.normal.z + 1.0)
-            // })
-        }
+            // };
 
 
-        return ColorEnum::False(false);
+        return if record.hit {ColorEnum::Color(record.color)} else {ColorEnum::False(false)};
     }
 
     pub fn render(&self, window: &mut Window, samples_per_pixel: i32) {
@@ -103,7 +98,7 @@ impl Scene {
                 let mut pixel_color = Rgb {..Default::default()};
 
                 // anti aliasing
-                for a in 0..samples_per_pixel {
+                for _ in 0..samples_per_pixel {
 
                     let mut x_rand = x as f32;
                     let mut y_rand = y as f32;
@@ -115,7 +110,6 @@ impl Scene {
 
                     let ray = self.camera.get_ray(x_rand, y_rand, &window);
 
-
                     let mut sample_color = Rgb {..Default::default()};
 
                     // ColorEnum
@@ -124,7 +118,6 @@ impl Scene {
                             sample_color = c;
                         },
                         ColorEnum::False(_f) => {
-                            Rgb {..Default::default()};
                            sample_color = gradient_background_buffer[index];
                         }
                     };

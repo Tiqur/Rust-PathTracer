@@ -11,7 +11,6 @@ impl Checkerboard {
     pub fn uv_pattern_at(&self, u: f32, v: f32) -> Rgb {
         let u2 = (u * self.size1).round();
         let v2 = (v * self.size2).round();
-
         if (u2 + v2) % 2.0 == 0.0 {
             return self.color1;
         } else {

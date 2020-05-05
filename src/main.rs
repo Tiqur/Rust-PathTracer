@@ -1,5 +1,4 @@
 use minifb;
-use minifb::{WindowOptions, Key, KeyRepeat};
 
 mod Classes;
 use Classes::Vec3::Vec3;
@@ -9,7 +8,6 @@ use crate::PathTracing::Classes::Camera::Camera;
 use PathTracing::Classes::Scene::Scene;
 
 use std::time::*;
-use std::thread;
 use crate::PathTracing::Objects::Sphere::Sphere;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 use crate::Classes::Rgb::Rgb;
@@ -19,6 +17,7 @@ use crate::PathTracing::Textures::Base::Base;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 use crate::PathTracing::Materials::Matte::Matte;
 use crate::PathTracing::Textures::Checkerboard::Checkerboard;
+use minifb::WindowOptions;
 
 fn main() {
     let width = 1200;
@@ -34,7 +33,7 @@ fn main() {
     };
 
 
-    let mut scene = Scene {
+    let scene = Scene {
         camera: Camera {
             pos: Vec3 {
                 x: 0.0,
@@ -48,7 +47,7 @@ fn main() {
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
                     x: 0.0,
-                    y: 0.0,
+                    y: 0.2,
                     z: 0.0
                 },
                 radius: 5.0,
@@ -83,8 +82,8 @@ fn main() {
                             g: 1.0,
                             b: 1.0
                         },
-                        size1: 4.0,
-                        size2: 4.0
+                        size1: 2.0,
+                        size2: 20.0
                     })
                 }
             })
