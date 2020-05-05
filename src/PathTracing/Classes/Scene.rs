@@ -8,7 +8,8 @@ use crate::PathTracing::Classes::HitRecord::HitRecord;
 extern crate rand;
 use rand::Rng;
 use crate::PathTracing::Functions::progress_bar::progress_bar;
-use console::Term;
+use console::{Term, style};
+use std::time::Instant;
 
 pub struct Scene {
     pub camera: Camera,
@@ -89,11 +90,14 @@ impl Scene {
 
         let term = Term::stdout();
         term.clear_screen();
+        term.hide_cursor();
+        let now = Instant::now();
+        println!("{}", style("Starting render...").cyan());
 
         // sends out rays
         for y in 0..window.height {
-            term.move_cursor_to(0, 0);
-            println!("{}\n{}", "Starting render...", progress_bar(y as i32, window.height as i32, 30));
+            term.move_cursor_to(0, 1);
+            println!("{}", progress_bar(y as i32, window.height as i32, 30));
 
             for x in 0..window.width {
 
@@ -101,8 +105,7 @@ impl Scene {
                 let mut pixel_color = Rgb {..Default::default()};
 
                 // anti aliasing
-                for _ in 0..samples_per_pixel {
-
+                for i in 0..samples_per_pixel {
                     let mut x_rand = x as f32;
                     let mut y_rand = y as f32;
 
@@ -132,5 +135,6 @@ impl Scene {
                 index += 1;
             }
         }
+        println!("{}: {}", style("Render time").cyan(), style(format!("{}ms", now.elapsed().as_millis())).green());
     }
 }
