@@ -86,10 +86,13 @@ impl Scene {
         let gradient_background_buffer = self.get_background_gradient(window);
 
         let mut index = 0;
+
+        let term = Term::stdout();
+        term.clear_screen();
+
         // sends out rays
         for y in 0..window.height {
-            let term = Term::stdout();
-            term.clear_screen();
+            term.move_cursor_to(0, 0);
             println!("{}\n{}", "Starting render...", progress_bar(y as i32, window.height as i32, 30));
 
             for x in 0..window.width {

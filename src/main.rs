@@ -22,7 +22,7 @@ use minifb::WindowOptions;
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 1;
+    let samples_per_pixel = 100;
     // let threads = 2;  will multithread eventually
 
     let mut window = Classes::Window::Window {
