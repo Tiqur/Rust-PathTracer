@@ -10,6 +10,7 @@ use rand::Rng;
 use crate::PathTracing::Functions::progress_bar::progress_bar;
 use console::{Term, style};
 use std::time::Instant;
+use std::fs::symlink_metadata;
 
 pub struct Scene {
     pub camera: Camera,
@@ -86,6 +87,8 @@ impl Scene {
         // caches background values
         let gradient_background_buffer = self.get_background_gradient(window);
 
+        let mut ray_time_sum = 0.0;
+
         let mut index = 0;
 
         let term = Term::stdout();
@@ -96,8 +99,21 @@ impl Scene {
 
         // sends out rays
         for y in 0..window.height {
-            term.move_cursor_to(0, 1);
-            println!("{}", progress_bar(y as i32, window.height as i32, 30));
+
+                // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
+                let mut spaces_to_clear_line = String::new();
+                for _ in 0..100 {
+                    spaces_to_clear_line = format!("{}{}", spaces_to_clear_line, " ");
+                }
+                // I know this is unoptimized but the more calculations per pixel, the less this will matter
+                // Also remember to edit this when adding more computation per ray ( like lighting etc )
+                term.move_cursor_to(0, 1);
+                let avg_ray_time = (ray_time_sum / (index + 1) as f64 ) / 1000.0;
+                let remaining_rays = (window.width * window.height) - (index + window.width);
+                println!("{} (ms): {}", style("Average ray calculation time").cyan(), style(avg_ray_time).yellow());
+                println!("{}: {}{}", style("Rays remaining").cyan(), style(remaining_rays).yellow(), spaces_to_clear_line);
+                println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((avg_ray_time * remaining_rays as f64) * 1000.0).yellow(), spaces_to_clear_line);
+                println!("{}", progress_bar(y as i32, window.height as i32, 30));
 
             for x in 0..window.width {
 
@@ -106,6 +122,8 @@ impl Scene {
 
                 // anti aliasing
                 for i in 0..samples_per_pixel {
+                    let ray_time_start = Instant::now();
+
                     let mut x_rand = x as f32;
                     let mut y_rand = y as f32;
 
@@ -129,7 +147,7 @@ impl Scene {
                     };
 
                     pixel_color += sample_color;
-
+                    ray_time_sum += ray_time_start.elapsed().as_secs_f64();
                 }
                 window.secondary_buffer[index] = pixel_color.div(samples_per_pixel as f32).to_int();
                 index += 1;
