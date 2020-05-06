@@ -40,8 +40,8 @@ fn main() {
         camera: Camera {
             pos: Vec3 {
                 x: 0.0,
-                y: 0.0,
-                z: -40.0
+                y: 1.0,
+                z: -50.0
             },
             fov: 30.0,
             aspect_ratio: width as f32 / height as f32
@@ -50,7 +50,7 @@ fn main() {
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
                     x: 0.0,
-                    y: 0.2,
+                    y: 1.0,
                     z: 0.0
                 },
                 radius: 5.0,
@@ -81,9 +81,9 @@ fn main() {
                             b: 0.0
                         },
                         color2: Rgb {
-                            r: 1.0,
-                            g: 1.0,
-                            b: 1.0
+                            r: 0.878,
+                            g: 0.878,
+                            b: 0.784
                         },
                         size1: 5.0,
                         size2: 40.0
@@ -92,8 +92,13 @@ fn main() {
             })
         ],
         lights: vec![
+            // Light{ pos: Vec3 {
+            //     x: -40.0,
+            //     y: 30.0,
+            //     z: 0.0
+            // }},
             Light{ pos: Vec3 {
-                x: -40.0,
+                x: 40.0,
                 y: 30.0,
                 z: 0.0
             }}

@@ -27,10 +27,11 @@ impl Scene {
 
 
 
+
     fn get_background_gradient(&self, window: &mut Window) -> Vec<Rgb> {
         let mut gradient_rgb_buffer = Vec::new();
 
-        let color1 = Rgb{
+        let color1 = Rgb {
             r: 0.35,
             g: 0.35,
             b: 0.7
@@ -52,53 +53,90 @@ impl Scene {
 
     }
 
-    fn ray_trace(&self, ray: Ray, recusion_depth: i32) -> HitRecord {
+    fn get_closest_hit_record(&self, objects: &Vec<ObjectEnum>, ray: Ray) -> HitRecord {
         let mut record = HitRecord {..Default::default()};
-
-
-            for obj in &self.objects {
-
-                match obj {
-                    ObjectEnum::Sphere(sphere) => {
-
-
-                        let object_hit_record =  sphere.intersection(ray);
-                        // if intersection
-                        if object_hit_record.hit {
-                            // if no previous intersection or new intersection is closer
-                            if !record.hit || object_hit_record.distance < record.distance {
-                                record = object_hit_record;
-                            }
+        for obj in objects {
+            match obj {
+                ObjectEnum::Sphere(sphere) => {
+                    let mut object_hit_record =  sphere.intersection(ray);
+                    // if intersection
+                    if object_hit_record.hit {
+                        // if no previous intersection or new intersection is closer
+                        if !record.hit || object_hit_record.distance < record.distance {
+                            record = object_hit_record;
                         }
+                    }
 
+                }
+            }
+        }
+        return record;
+    }
 
-                        match &sphere.material.material {
-                            MaterialEnum::Matte(mat) => {
-
-                            },
-                            MaterialEnum::Mirror(mat) => {
-                                if recusion_depth > 0 {
-                                    let dn = 2.0 * ray.direction.dot(record.normal);
-                                    let reflection_dir = ray.direction - Vec3 {
-                                        x: record.normal.x * dn,
-                                        y: record.normal.y * dn,
-                                        z: record.normal.z * dn
-                                    }.to_unit_vector();
-                                    let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir };
-                                    record.color = self.ray_trace(reflection_ray, recusion_depth - 1).color
-                                }
-
-                            }
-                            _ => {}
-                        }
-
-
-
-
-
+    // made another function similar to "get closest hit record" but this one doesn't check for the closest since it doesn't matter ( transparent objects might mess this up though )
+    fn is_obstructed(&self, objects: &Vec<ObjectEnum>, ray: Ray) -> bool {
+        let mut obstructed = false;
+        for obj in objects {
+            match obj {
+                ObjectEnum::Sphere(sphere) => {
+                    let mut object_hit_record =  sphere.intersection(ray);
+                    // if intersection
+                    if object_hit_record.hit {
+                        obstructed = true;
+                        break;
                     }
                 }
             }
+        }
+        return obstructed;
+    }
+
+    fn ray_trace(&self, ray: Ray, recusion_depth: i32) -> HitRecord {
+        // gets closest object and it's normal, distance, etc
+        let mut record = self.get_closest_hit_record(&self.objects, ray);
+
+        // casts shadow rays
+        for light in &self.lights {
+            let light_direction = (light.pos - record.closest_point);
+            let shadow_ray = Ray{ origin: record.closest_point, direction: light_direction.to_unit_vector()};
+            if self.is_obstructed(&self.objects, shadow_ray) {
+                record.color = Rgb { ..Default::default() };
+            }
+        }
+
+
+        // for obj in &self.objects {
+        //     match obj {
+        //         ObjectEnum::Sphere(sphere) => {
+        //                 match &sphere.material.material {
+        //                     MaterialEnum::Matte(mat) => {
+        //                         // cast shadow ray
+        //                         for light in &self.lights {
+        //                             let light_source_obstructed = light.is_obstructed(&self.objects, record.closest_point);
+        //                             if light_source_obstructed {
+        //                                 record.color = Rgb { ..Default::default() };
+        //                             }
+        //                         }
+        //                     },
+        //
+        //                     MaterialEnum::Mirror(mat) => {
+        //                         if recusion_depth > 0 {
+        //                             let dn = 2.0 * ray.direction.dot(record.normal);
+        //                             let reflection_dir = ray.direction - Vec3 {
+        //                                 x: record.normal.x * dn,
+        //                                 y: record.normal.y * dn,
+        //                                 z: record.normal.z * dn
+        //                             }.to_unit_vector();
+        //                             let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir };
+        //                             record.color = self.ray_trace(reflection_ray, recusion_depth - 1).color
+        //                         }
+        //                     }
+        //                     _ => {}
+        //                 }
+        //
+        //         }
+        //     }
+        // }
 
 
         return record;
@@ -164,15 +202,9 @@ impl Scene {
 
                     // if ray trace hits object,
                     if ray_trace_record.hit {
-                        // cast shadow ray
-                        for light in &self.lights {
-                            let light_source_obstructed = light.is_obstructed(&self.objects, ray_trace_record.closest_point);
-                            sample_color = ray_trace_record.color;
-                            if light_source_obstructed {
-                                // light source is not obstructed
-                               // sample_color = Rgb {..Default::default()};
-                            }
-                        }
+                        sample_color = ray_trace_record.color;
+
+
 
                     } else {
                         // this will need to be fixed before reflections are implemented correctly

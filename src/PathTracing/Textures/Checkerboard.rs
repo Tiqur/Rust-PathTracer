@@ -1,5 +1,6 @@
 use crate::Classes::Rgb::Rgb;
 
+#[derive(Copy, Clone)]
 pub struct Checkerboard {
     pub color1: Rgb,
     pub color2: Rgb,

@@ -6,7 +6,13 @@ use crate::PathTracing::Classes::HitRecord::HitRecord;
 use crate::PathTracing::Classes::Material::Material;
 use std::f32::consts::PI;
 use crate::Classes::Point2D::Point2D;
+use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
+use crate::PathTracing::Materials::Matte::Matte;
+use crate::PathTracing::Enums::TextureEnum::TextureEnum;
+use crate::PathTracing::Textures::Base::Base;
+use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
 
+#[derive(Copy, Clone)]
 pub struct Sphere {
     pub pos: Vec3,
     pub radius: f32,
@@ -36,7 +42,8 @@ impl Shape for Sphere {
                 hit_record.distance = if t0 < t1 {t0} else {t1};
                 hit_record.closest_point = ray.get_point(hit_record.distance);
                 hit_record.normal = (hit_record.closest_point - self.pos).to_unit_vector();
-                hit_record.color = self.get_uv_at(hit_record.closest_point)
+                hit_record.color = self.get_uv_at(hit_record.closest_point);
+                hit_record.object = ObjectEnum::Sphere(self.clone());
             }
         }
         return hit_record;
@@ -52,6 +59,18 @@ impl Shape for Sphere {
         let u = 1.0 - (raw_u + 0.5);
         let v = 1.0 - (phi / PI);
         return self.material.uv_pattern_at(Point2D {x: u, y: v})
+       // return self.material.uv_pattern_at(Point2D {x: p.x, y: p.z})
     }
 
+}
+
+
+impl Default for Sphere {
+    fn default() -> Sphere {
+        return Sphere {
+            pos: Vec3 {..Default::default()},
+            radius: 0.0,
+            material: Material { material: MaterialEnum::Matte(Matte{}), texture: TextureEnum::Base(Base{ color: Default::default() }) }
+        }
+    }
 }

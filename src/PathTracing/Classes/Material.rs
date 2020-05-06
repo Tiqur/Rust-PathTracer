@@ -3,6 +3,7 @@ use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 use crate::PathTracing::Enums::TextureEnum::TextureEnum;
 use crate::Classes::Point2D::Point2D;
 
+#[derive(Copy, Clone)]
 pub struct Material {
     pub material: MaterialEnum,
     pub texture: TextureEnum
