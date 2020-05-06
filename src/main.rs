@@ -18,11 +18,13 @@ use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 use crate::PathTracing::Materials::Matte::Matte;
 use crate::PathTracing::Textures::Checkerboard::Checkerboard;
 use minifb::WindowOptions;
+use crate::PathTracing::Classes::Light::Light;
 
 fn main() {
     let width = 1200;
     let height = 800;
     let samples_per_pixel = 50;
+    let show_statistics = true;
     // let threads = 2;  will multithread eventually
 
     let mut window = Classes::Window::Window {
@@ -71,28 +73,28 @@ fn main() {
                 radius: 500.0,
                 material: Material {
                     material: MaterialEnum::Matte(Matte {}),
-                    texture: TextureEnum::Checkerboard(Checkerboard {
-                        color1: Rgb {
-                            r: 0.0,
-                            g: 0.0,
-                            b: 0.0
-                        },
-                        color2: Rgb {
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
                             r: 1.0,
-                            g: 1.0,
+                            g: 0.0,
                             b: 1.0
-                        },
-                        size1: 2.0,
-                        size2: 20.0
+                        }
                     })
                 }
             })
+        ],
+        lights: vec![
+            Light{ pos: Vec3 {
+                x: -40.0,
+                y: 30.0,
+                z: 0.0
+            }}
         ]
     };
 
 
 
-        scene.render(&mut window, samples_per_pixel);
+        scene.render(&mut window, samples_per_pixel, show_statistics);
 
 
 

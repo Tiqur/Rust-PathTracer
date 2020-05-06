@@ -10,17 +10,15 @@ use rand::Rng;
 use crate::PathTracing::Functions::progress_bar::progress_bar;
 use console::{Term, style};
 use std::time::Instant;
-use std::fs::symlink_metadata;
+use crate::Classes::Vec3::Vec3;
+use crate::PathTracing::Classes::Light::Light;
 
 pub struct Scene {
     pub camera: Camera,
-    pub objects: Vec<ObjectEnum>
+    pub objects: Vec<ObjectEnum>,
+    pub lights: Vec<Light> // again this is temp
 }
 
-enum ColorEnum {
-    Color(Rgb),
-    False(bool)
-}
 
 impl Scene {
 
@@ -49,37 +47,37 @@ impl Scene {
 
     }
 
-    fn ray_trace(&self, ray: Ray) -> ColorEnum {
+    fn ray_trace(&self, ray: Ray) -> HitRecord {
         let mut record = HitRecord {..Default::default()};
-        for obj in &self.objects {
 
-            match obj {
-                ObjectEnum::Sphere(sphere) => {
-                    let object_hit_record =  sphere.intersection(ray);
-                    // if intersection
-                    if object_hit_record.hit {
-                        // if no previous intersection or new intersection is closer
-                        if !record.hit || object_hit_record.distance < record.distance {
-                            record = object_hit_record;
+
+            for obj in &self.objects {
+
+                match obj {
+                    ObjectEnum::Sphere(sphere) => {
+
+
+
+                        let object_hit_record =  sphere.intersection(ray);
+                        // if intersection
+                        if object_hit_record.hit {
+                            // if no previous intersection or new intersection is closer
+                            if !record.hit || object_hit_record.distance < record.distance {
+                                record = object_hit_record;
+                            }
                         }
+
+
+
                     }
                 }
             }
 
-        }
 
-
-            // ray_hit_record.color = Rgb { // this is for testing
-            //     r: 0.5 * (ray_hit_record.normal.x + 1.0),
-            //     g: 0.5 * (ray_hit_record.normal.y + 1.0),
-            //     b: 0.5 * (ray_hit_record.normal.z + 1.0)
-            // };
-
-
-        return if record.hit {ColorEnum::Color(record.color)} else {ColorEnum::False(false)};
+        return record;
     }
 
-    pub fn render(&self, window: &mut Window, samples_per_pixel: i32) {
+    pub fn render(&self, window: &mut Window, samples_per_pixel: i32, show_statistics: bool) {
 
 
         // initialize rng generator
@@ -99,21 +97,19 @@ impl Scene {
 
         // sends out rays
         for y in 0..window.height {
-
-                // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
-                let mut spaces_to_clear_line = String::new();
-                for _ in 0..100 {
-                    spaces_to_clear_line = format!("{}{}", spaces_to_clear_line, " ");
+                if show_statistics {
+                    // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
+                    let mut spaces_to_clear_line = "          ";
+                    // I know this is unoptimized but the more calculations per pixel, the less this will matter
+                    // Also note to self: remember to edit this when adding more computation per ray ( like lighting etc )
+                    term.move_cursor_to(0, 1);
+                    let avg_ray_time = (ray_time_sum / (index + 1) as f64 ) / 1000.0;
+                    let remaining_rays = (window.width * window.height) - (index + window.width);
+                    println!("{} (ms): {}", style("Average ray calculation time").cyan(), style(avg_ray_time).yellow());
+                    println!("{}: {}{}", style("Rays remaining").cyan(), style(remaining_rays).yellow(), spaces_to_clear_line);
+                    println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((avg_ray_time * remaining_rays as f64) * 1000.0).yellow(), spaces_to_clear_line);
+                    println!("{}", progress_bar(y as i32, window.height as i32, 30));
                 }
-                // I know this is unoptimized but the more calculations per pixel, the less this will matter
-                // Also remember to edit this when adding more computation per ray ( like lighting etc )
-                term.move_cursor_to(0, 1);
-                let avg_ray_time = (ray_time_sum / (index + 1) as f64 ) / 1000.0;
-                let remaining_rays = (window.width * window.height) - (index + window.width);
-                println!("{} (ms): {}", style("Average ray calculation time").cyan(), style(avg_ray_time).yellow());
-                println!("{}: {}{}", style("Rays remaining").cyan(), style(remaining_rays).yellow(), spaces_to_clear_line);
-                println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((avg_ray_time * remaining_rays as f64) * 1000.0).yellow(), spaces_to_clear_line);
-                println!("{}", progress_bar(y as i32, window.height as i32, 30));
 
             for x in 0..window.width {
 
@@ -136,15 +132,30 @@ impl Scene {
 
                     let mut sample_color = Rgb {..Default::default()};
 
-                    // ColorEnum
-                    match self.ray_trace(ray) {
-                        ColorEnum::Color(c) => {
-                            sample_color = c;
-                        },
-                        ColorEnum::False(_f) => {
-                           sample_color = gradient_background_buffer[index];
+                    // cast ray
+                    let ray_trace_record = self.ray_trace(ray);
+
+                    // if ray trace hits object,
+                    if ray_trace_record.hit {
+                        // cast shadow ray
+                        for light in &self.lights {
+                            let shadow_ray = light.get_ray(ray_trace_record.closest_point);
+
+                            let light_source_obstructed = light.is_obstructed(&self.objects, shadow_ray);
+                            if light_source_obstructed {
+                                // light source is not obstructed
+                                sample_color = Rgb {..Default::default()};
+                            } else {
+                                // if light source is not obstructed
+                                sample_color = ray_trace_record.color;
+                            }
                         }
-                    };
+
+                    } else {
+                        // this will need to be fixed before reflections are implemented correctly
+                        sample_color = gradient_background_buffer[index];
+                    }
+
 
                     pixel_color += sample_color;
                     ray_time_sum += ray_time_start.elapsed().as_secs_f64();
