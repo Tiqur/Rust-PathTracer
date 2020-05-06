@@ -19,11 +19,12 @@ use crate::PathTracing::Materials::Matte::Matte;
 use crate::PathTracing::Textures::Checkerboard::Checkerboard;
 use minifb::WindowOptions;
 use crate::PathTracing::Classes::Light::Light;
+use crate::PathTracing::Materials::Mirror::Mirror;
 
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 50;
+    let samples_per_pixel = 1;
     let show_statistics = true;
     // let threads = 2;  will multithread eventually
 
@@ -54,7 +55,7 @@ fn main() {
                 },
                 radius: 5.0,
                 material: Material {
-                    material: MaterialEnum::Matte(Matte {}),
+                    material: MaterialEnum::Mirror(Mirror {}),
                     texture: TextureEnum::Base(Base {
                         color: Rgb {
                             r: 0.0,
@@ -73,12 +74,19 @@ fn main() {
                 radius: 500.0,
                 material: Material {
                     material: MaterialEnum::Matte(Matte {}),
-                    texture: TextureEnum::Base(Base {
-                        color: Rgb {
-                            r: 1.0,
+                    texture: TextureEnum::Checkerboard(Checkerboard {
+                        color1: Rgb {
+                            r: 0.0,
                             g: 0.0,
+                            b: 0.0
+                        },
+                        color2: Rgb {
+                            r: 1.0,
+                            g: 1.0,
                             b: 1.0
-                        }
+                        },
+                        size1: 5.0,
+                        size2: 40.0
                     })
                 }
             })

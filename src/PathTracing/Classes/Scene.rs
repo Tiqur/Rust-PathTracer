@@ -12,6 +12,8 @@ use console::{Term, style};
 use std::time::Instant;
 use crate::Classes::Vec3::Vec3;
 use crate::PathTracing::Classes::Light::Light;
+use crate::PathTracing::Classes::Material::Material;
+use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 
 pub struct Scene {
     pub camera: Camera,
@@ -20,7 +22,10 @@ pub struct Scene {
 }
 
 
+
 impl Scene {
+
+
 
     fn get_background_gradient(&self, window: &mut Window) -> Vec<Rgb> {
         let mut gradient_rgb_buffer = Vec::new();
@@ -47,7 +52,7 @@ impl Scene {
 
     }
 
-    fn ray_trace(&self, ray: Ray) -> HitRecord {
+    fn ray_trace(&self, ray: Ray, recusion_depth: i32) -> HitRecord {
         let mut record = HitRecord {..Default::default()};
 
 
@@ -55,7 +60,6 @@ impl Scene {
 
                 match obj {
                     ObjectEnum::Sphere(sphere) => {
-
 
 
                         let object_hit_record =  sphere.intersection(ray);
@@ -66,6 +70,29 @@ impl Scene {
                                 record = object_hit_record;
                             }
                         }
+
+
+                        match &sphere.material.material {
+                            MaterialEnum::Matte(mat) => {
+
+                            },
+                            MaterialEnum::Mirror(mat) => {
+                                if recusion_depth > 0 {
+                                    let dn = 2.0 * ray.direction.dot(record.normal);
+                                    let reflection_dir = ray.direction - Vec3 {
+                                        x: record.normal.x * dn,
+                                        y: record.normal.y * dn,
+                                        z: record.normal.z * dn
+                                    }.to_unit_vector();
+                                    let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir };
+                                    record.color = self.ray_trace(reflection_ray, recusion_depth - 1).color
+                                }
+
+                            }
+                            _ => {}
+                        }
+
+
 
 
 
@@ -133,21 +160,17 @@ impl Scene {
                     let mut sample_color = Rgb {..Default::default()};
 
                     // cast ray
-                    let ray_trace_record = self.ray_trace(ray);
+                    let ray_trace_record = self.ray_trace(ray, 5);
 
                     // if ray trace hits object,
                     if ray_trace_record.hit {
                         // cast shadow ray
                         for light in &self.lights {
-                            let shadow_ray = light.get_ray(ray_trace_record.closest_point);
-
-                            let light_source_obstructed = light.is_obstructed(&self.objects, shadow_ray);
+                            let light_source_obstructed = light.is_obstructed(&self.objects, ray_trace_record.closest_point);
+                            sample_color = ray_trace_record.color;
                             if light_source_obstructed {
                                 // light source is not obstructed
-                                sample_color = Rgb {..Default::default()};
-                            } else {
-                                // if light source is not obstructed
-                                sample_color = ray_trace_record.color;
+                               // sample_color = Rgb {..Default::default()};
                             }
                         }
 
