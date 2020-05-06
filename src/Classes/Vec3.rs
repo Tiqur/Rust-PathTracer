@@ -99,6 +99,11 @@ impl Neg for Vec3 {
     }
 }
 
+impl PartialEq for Vec3 { /* == */
+    fn eq(&self,  other: &Vec3) -> bool {
+        return self.x == other.x && self.y == other.y && self.z == other.z
+    }
+}
 
 impl Vec3 {
 
@@ -146,6 +151,14 @@ impl Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x
+        }
+    }
+    // multiply float
+    pub fn mulF(&self, other: f32) -> Vec3 {
+        return Vec3 {
+            x: self.y * other,
+            y: self.z * other,
+            z: self.x * other
         }
     }
 }

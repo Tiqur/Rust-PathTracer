@@ -14,6 +14,7 @@ use crate::Classes::Vec3::Vec3;
 use crate::PathTracing::Classes::Light::Light;
 use crate::PathTracing::Classes::Material::Material;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
+use std::ops::Mul;
 
 pub struct Scene {
     pub camera: Camera,
@@ -74,16 +75,17 @@ impl Scene {
     }
 
     // made another function similar to "get closest hit record" but this one doesn't check for the closest since it doesn't matter ( transparent objects might mess this up though )
-    fn is_obstructed(&self, objects: &Vec<ObjectEnum>, ray: Ray) -> bool {
+    fn is_obstructed(&self, objects: &Vec<ObjectEnum>, shadow_ray: Ray) -> bool {
         let mut obstructed = false;
         for obj in objects {
             match obj {
                 ObjectEnum::Sphere(sphere) => {
-                    let mut object_hit_record =  sphere.intersection(ray);
+                    let object_hit_record =  sphere.intersection(shadow_ray);
                     // if intersection
                     if object_hit_record.hit {
-                        obstructed = true;
-                        break;
+                            obstructed = true;
+                            break;
+
                     }
                 }
             }
@@ -95,14 +97,19 @@ impl Scene {
         // gets closest object and it's normal, distance, etc
         let mut record = self.get_closest_hit_record(&self.objects, ray);
 
-        // casts shadow rays
-        for light in &self.lights {
-            let light_direction = (light.pos - record.closest_point);
-            let shadow_ray = Ray{ origin: record.closest_point, direction: light_direction.to_unit_vector()};
-            if self.is_obstructed(&self.objects, shadow_ray) {
-                record.color = Rgb { ..Default::default() };
+        // if intersection
+        if record.hit {
+            // casts shadow rays
+            for light in &self.lights {
+                let light_direction = (light.pos - record.closest_point);
+                let new_ray_origin = record.closest_point + record.normal.mulF(0.001);
+                let shadow_ray = Ray{ origin: new_ray_origin, direction: light_direction.to_unit_vector()};
+                if self.is_obstructed(&self.objects, shadow_ray) {
+                    record.color = Rgb { ..Default::default() };
+                }
             }
         }
+
 
 
         // for obj in &self.objects {
@@ -203,9 +210,6 @@ impl Scene {
                     // if ray trace hits object,
                     if ray_trace_record.hit {
                         sample_color = ray_trace_record.color;
-
-
-
                     } else {
                         // this will need to be fixed before reflections are implemented correctly
                         sample_color = gradient_background_buffer[index];

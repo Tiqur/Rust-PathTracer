@@ -24,7 +24,7 @@ use crate::PathTracing::Materials::Mirror::Mirror;
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 1;
+    let samples_per_pixel = 50;
     let show_statistics = true;
     // let threads = 2;  will multithread eventually
 
