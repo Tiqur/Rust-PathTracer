@@ -55,17 +55,20 @@ impl Scene {
     fn get_closest_hit_record(&self, objects: &Vec<ObjectEnum>, ray: Ray) -> HitRecord {
         let mut record = HitRecord {..Default::default()};
         for obj in objects {
+            let mut object_hit_record;
             match obj {
                 ObjectEnum::Sphere(sphere) => {
-                    let mut object_hit_record =  sphere.intersection(ray);
-                    // if intersection
-                    if object_hit_record.hit {
-                        // if no previous intersection or new intersection is closer
-                        if !record.hit || object_hit_record.distance < record.distance {
-                            record = object_hit_record;
-                        }
-                    }
-
+                    object_hit_record =  sphere.intersection(ray);
+                },
+                ObjectEnum::Triangle(triangle) => {
+                    object_hit_record =  triangle.intersection(ray);
+                }
+            }
+            // if intersection
+            if object_hit_record.hit {
+                // if no previous intersection or new intersection is closer
+                if !record.hit || object_hit_record.distance < record.distance {
+                    record = object_hit_record;
                 }
             }
         }
@@ -120,10 +123,27 @@ impl Scene {
                             let reflection_dir = ray.direction - record.normal.mulF(dn);
                             let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir.to_unit_vector() };
                             return self.ray_trace(reflection_ray, recursion_depth - 1)
+                        }
+                    }
+                },
+                ObjectEnum::Triangle(triangle) => {
+                    match triangle.material.material {
+                        MaterialEnum::Diffuse(material) => {
+                            // send diffuse ray
+                            let target = (record.closest_point + record.normal + self.random_in_hemisphere(record.normal)) - record.closest_point;
+                            let new_ray = Ray { origin: record.closest_point, direction: target};
+                            return record.color * self.ray_trace(new_ray, recursion_depth - 1).mulF(0.5);
                         },
-                        _ => {}
+                        MaterialEnum::Mirror(material) => {
+                            // send reflection ray
+                            let dn = 2.0 * ray.direction.dot(record.normal);
+                            let reflection_dir = ray.direction - record.normal.mulF(dn);
+                            let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir.to_unit_vector() };
+                            return self.ray_trace(reflection_ray, recursion_depth - 1)
+                        }
                     }
                 }
+
             }
 
         }

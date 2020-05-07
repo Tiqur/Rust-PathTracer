@@ -20,11 +20,12 @@ use crate::PathTracing::Textures::Checkerboard::Checkerboard;
 use minifb::WindowOptions;
 use crate::PathTracing::Classes::Light::Light;
 use crate::PathTracing::Materials::Mirror::Mirror;
+use crate::PathTracing::Objects::Triangle::Triangle;
 
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 20;
     let show_statistics = true;
     let recursion_depth = 20;
     // let threads = 2;  will multithread eventually
@@ -48,6 +49,33 @@ fn main() {
             aspect_ratio: width as f32 / height as f32
         },
         objects: vec![
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -2.0,
+                    y: 20.0,
+                    z: -30.0
+                },
+                vec2: Vec3 {
+                    x: -30.0,
+                    y: 4.0,
+                    z: -10.0
+                },
+                vec3: Vec3 {
+                    x: 10.0,
+                    y: 3.0,
+                    z: 50.0
+                },
+                material: Material {
+                    material: MaterialEnum::Mirror(Mirror {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 0.0,
+                            g: 1.0,
+                            b: 0.0
+                        }
+                    })
+                }
+            }),
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
                     x: -7.0,

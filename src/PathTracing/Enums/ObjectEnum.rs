@@ -1,7 +1,8 @@
 use crate::PathTracing::Objects::Sphere::Sphere;
+use crate::PathTracing::Objects::Triangle::Triangle;
 
 #[derive(Copy, Clone)]
 pub enum ObjectEnum {
-    // will add more later on
-    Sphere(Sphere)
+    Sphere(Sphere),
+    Triangle(Triangle)
 }
