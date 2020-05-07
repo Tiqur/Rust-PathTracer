@@ -7,7 +7,7 @@ use crate::PathTracing::Classes::Material::Material;
 use std::f32::consts::PI;
 use crate::Classes::Point2D::Point2D;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
-use crate::PathTracing::Materials::Matte::Matte;
+use crate::PathTracing::Materials::Diffuse::Matte;
 use crate::PathTracing::Enums::TextureEnum::TextureEnum;
 use crate::PathTracing::Textures::Base::Base;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;

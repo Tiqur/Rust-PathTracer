@@ -1,2 +1,2 @@
-pub mod Matte;
+pub mod Diffuse;
 pub mod Mirror;

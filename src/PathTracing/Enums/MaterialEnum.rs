@@ -1,4 +1,4 @@
-use crate::PathTracing::Materials::Matte::Matte;
+use crate::PathTracing::Materials::Diffuse::Matte;
 use crate::PathTracing::Materials::Mirror::Mirror;
 
 #[derive(Copy, Clone)]

@@ -1,4 +1,4 @@
-use std::ops::{AddAssign};
+use std::ops::{AddAssign, Add, Sub};
 #[derive(Copy, Clone)]
 pub struct Rgb {
     pub r: f32,
@@ -9,7 +9,10 @@ pub struct Rgb {
 impl Rgb {
     // converts to value able to be used with buffer
     pub fn to_int(&self) -> u32 {
-        return ( 65536.0 * (self.r * 255.0).round() + 256.0 * (self.g * 255.0).round() + (self.b * 255.0).round() ) as u32;
+        let r = if self.r < 0.0 { 0.0 } else if self.r > 1.0 { 1.0 } else { self.r };
+        let g = if self.g < 0.0 { 0.0 } else if self.g > 1.0 { 1.0 } else { self.g };
+        let b = if self.b < 0.0 { 0.0 } else if self.b > 1.0 { 1.0 } else { self.b };
+        return ( 65536.0 * (r * 255.0).round() + 256.0 * (g * 255.0).round() + (b * 255.0).round() ) as u32;
     }
 
     // mixes two colors using linear interpolation
@@ -26,6 +29,36 @@ impl Rgb {
             r: self.r / f,
             g: self.g / f,
             b: self.b / f
+        }
+    }
+
+    pub fn mul(&self, f: f32) -> Rgb {
+        Rgb {
+            r: self.r * f,
+            g: self.g * f,
+            b: self.b * f
+        }
+    }
+}
+
+impl Add for Rgb {
+    type Output = Rgb;
+    fn add(self, other: Rgb) -> Rgb {
+        return Rgb {
+            r: self.r + other.r,
+            g: self.g + other.g,
+            b: self.b + other.b
+        }
+    }
+}
+
+impl Sub for Rgb {
+    type Output = Rgb;
+    fn sub(self, other: Rgb) -> Rgb {
+        return Rgb {
+            r: self.r - other.r,
+            g: self.g - other.g,
+            b: self.b - other.b
         }
     }
 }

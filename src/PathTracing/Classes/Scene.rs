@@ -15,6 +15,7 @@ use crate::PathTracing::Classes::Light::Light;
 use crate::PathTracing::Classes::Material::Material;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 use std::ops::Mul;
+use std::f32::consts::PI;
 
 pub struct Scene {
     pub camera: Camera,
@@ -25,9 +26,6 @@ pub struct Scene {
 
 
 impl Scene {
-
-
-
 
     fn get_background_gradient(&self, window: &mut Window) -> Vec<Rgb> {
         let mut gradient_rgb_buffer = Vec::new();
@@ -74,82 +72,55 @@ impl Scene {
         return record;
     }
 
-    // made another function similar to "get closest hit record" but this one doesn't check for the closest since it doesn't matter ( transparent objects might mess this up though )
-    fn is_obstructed(&self, objects: &Vec<ObjectEnum>, shadow_ray: Ray) -> bool {
-        let mut obstructed = false;
-        for obj in objects {
-            match obj {
-                ObjectEnum::Sphere(sphere) => {
-                    let object_hit_record =  sphere.intersection(shadow_ray);
-                    // if intersection
-                    if object_hit_record.hit {
-                            obstructed = true;
-                            break;
-
-                    }
-                }
-            }
+    // I know that all the square roots here are inefficient
+    fn random_in_unit_sphere(&self) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let a = rng.gen_range(0.0, 2.0 * PI);
+        let z = rng.gen_range(-1.0, 1.0) as f32;
+        let r = (1.0 - z * z).sqrt() as f32;
+        return Vec3 {
+            x: r * a.cos(),
+            y: r * a.sin(),
+            z: z
         }
-        return obstructed;
     }
 
-    fn ray_trace(&self, ray: Ray, recusion_depth: i32) -> HitRecord {
+    fn random_in_hemisphere(&self, normal: Vec3) -> Vec3 {
+        let in_unit_sphere = self.random_in_unit_sphere();
+        if in_unit_sphere.dot(normal) > 0.0 {
+            return in_unit_sphere
+        } else {
+            return -in_unit_sphere
+        }
+    }
+
+
+
+    fn ray_trace(&self, ray: Ray, recursion_depth: i32) -> Rgb {
         // gets closest object and it's normal, distance, etc
         let mut record = self.get_closest_hit_record(&self.objects, ray);
 
-        // if intersection
+        if recursion_depth < 0 {
+            return Rgb::default()
+        }
+
         if record.hit {
-            // casts shadow rays
-            for light in &self.lights {
-                let light_direction = (light.pos - record.closest_point);
-                let new_ray_origin = record.closest_point + record.normal.mulF(0.001);
-                let shadow_ray = Ray{ origin: new_ray_origin, direction: light_direction.to_unit_vector()};
-                if self.is_obstructed(&self.objects, shadow_ray) {
-                    record.color = Rgb { ..Default::default() };
-                }
-            }
+            // send diffuse rays
+            let target = (record.closest_point + record.normal + self.random_in_hemisphere(record.normal)) - record.closest_point;
+            let new_ray = Ray { origin: record.closest_point, direction: target};
+            return self.ray_trace(new_ray, recursion_depth - 1).mul(0.5);
         }
 
 
 
-        // for obj in &self.objects {
-        //     match obj {
-        //         ObjectEnum::Sphere(sphere) => {
-        //                 match &sphere.material.material {
-        //                     MaterialEnum::Matte(mat) => {
-        //                         // cast shadow ray
-        //                         for light in &self.lights {
-        //                             let light_source_obstructed = light.is_obstructed(&self.objects, record.closest_point);
-        //                             if light_source_obstructed {
-        //                                 record.color = Rgb { ..Default::default() };
-        //                             }
-        //                         }
-        //                     },
-        //
-        //                     MaterialEnum::Mirror(mat) => {
-        //                         if recusion_depth > 0 {
-        //                             let dn = 2.0 * ray.direction.dot(record.normal);
-        //                             let reflection_dir = ray.direction - Vec3 {
-        //                                 x: record.normal.x * dn,
-        //                                 y: record.normal.y * dn,
-        //                                 z: record.normal.z * dn
-        //                             }.to_unit_vector();
-        //                             let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir };
-        //                             record.color = self.ray_trace(reflection_ray, recusion_depth - 1).color
-        //                         }
-        //                     }
-        //                     _ => {}
-        //                 }
-        //
-        //         }
-        //     }
-        // }
 
 
-        return record;
+        let t = 0.5 * ( ray.direction.to_unit_vector().y + 1.0);
+        let sky_color = Rgb{ r: 1.0, g: 1.0, b: 1.0 }.mul(1.0-t) + Rgb{ r: 0.5, g: 0.7, b: 1.7 }.mul(t);
+        return sky_color;
     }
 
-    pub fn render(&self, window: &mut Window, samples_per_pixel: i32, show_statistics: bool) {
+    pub fn render(&self, window: &mut Window, samples_per_pixel: i32, show_statistics: bool, recursion_depth: i32) {
 
 
         // initialize rng generator
@@ -202,24 +173,19 @@ impl Scene {
 
                     let ray = self.camera.get_ray(x_rand, y_rand, &window);
 
-                    let mut sample_color = Rgb {..Default::default()};
+                    //cast ray
+                    pixel_color += self.ray_trace(ray, recursion_depth);
 
-                    // cast ray
-                    let ray_trace_record = self.ray_trace(ray, 5);
-
-                    // if ray trace hits object,
-                    if ray_trace_record.hit {
-                        sample_color = ray_trace_record.color;
-                    } else {
-                        // this will need to be fixed before reflections are implemented correctly
-                        sample_color = gradient_background_buffer[index];
-                    }
-
-
-                    pixel_color += sample_color;
                     ray_time_sum += ray_time_start.elapsed().as_secs_f64();
                 }
-                window.secondary_buffer[index] = pixel_color.div(samples_per_pixel as f32).to_int();
+
+                let scale = 1.0 / samples_per_pixel as f32;
+                let ree = Rgb{
+                    r: (pixel_color.r * scale).sqrt(),
+                    g: (pixel_color.g * scale).sqrt(),
+                    b: (pixel_color.b * scale).sqrt()
+                };
+                window.secondary_buffer[index] = ree.to_int();
                 index += 1;
             }
         }
