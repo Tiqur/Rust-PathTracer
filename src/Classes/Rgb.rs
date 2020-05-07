@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, Add, Sub};
+use std::ops::{AddAssign, Add, Sub, Mul};
 #[derive(Copy, Clone)]
 pub struct Rgb {
     pub r: f32,
@@ -32,13 +32,14 @@ impl Rgb {
         }
     }
 
-    pub fn mul(&self, f: f32) -> Rgb {
+    pub fn mulF(&self, f: f32) -> Rgb {
         Rgb {
             r: self.r * f,
             g: self.g * f,
             b: self.b * f
         }
     }
+
 }
 
 impl Add for Rgb {
@@ -63,6 +64,17 @@ impl Sub for Rgb {
     }
 }
 
+
+impl Mul for Rgb {
+    type Output = Rgb;
+    fn mul(self, other: Rgb) -> Rgb {
+        Rgb {
+            r: self.r * other.r,
+            g: self.g * other.g,
+            b: self.b * other.b
+        }
+    }
+}
 impl AddAssign for Rgb {
     fn add_assign(&mut self, other: Self) {
         self.r += other.r;

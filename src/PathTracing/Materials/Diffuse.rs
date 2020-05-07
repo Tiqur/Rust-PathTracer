@@ -1,4 +1,4 @@
 #[derive(Copy, Clone)]
-pub struct Matte {
+pub struct Diffuse {
 
 }

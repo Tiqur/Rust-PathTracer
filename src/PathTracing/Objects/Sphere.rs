@@ -7,7 +7,7 @@ use crate::PathTracing::Classes::Material::Material;
 use std::f32::consts::PI;
 use crate::Classes::Point2D::Point2D;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
-use crate::PathTracing::Materials::Diffuse::Matte;
+use crate::PathTracing::Materials::Diffuse::Diffuse;
 use crate::PathTracing::Enums::TextureEnum::TextureEnum;
 use crate::PathTracing::Textures::Base::Base;
 use crate::PathTracing::Enums::ObjectEnum::ObjectEnum;
@@ -58,8 +58,8 @@ impl Shape for Sphere {
         let raw_u = theta / (2.0 / PI);
         let u = 1.0 - (raw_u + 0.5);
         let v = 1.0 - (phi / PI);
-        return self.material.uv_pattern_at(Point2D {x: u, y: v})
-       // return self.material.uv_pattern_at(Point2D {x: p.x, y: p.z})
+        //return self.material.uv_pattern_at(Point2D {x: u, y: v})
+        return self.material.uv_pattern_at(Point2D {x: p.x, y: p.z})
     }
 
 }
@@ -70,7 +70,7 @@ impl Default for Sphere {
         return Sphere {
             pos: Vec3 {..Default::default()},
             radius: 0.0,
-            material: Material { material: MaterialEnum::Matte(Matte{}), texture: TextureEnum::Base(Base{ color: Default::default() }) }
+            material: Material { material: MaterialEnum::Diffuse(Diffuse{}), texture: TextureEnum::Base(Base{ color: Default::default() }) }
         }
     }
 }

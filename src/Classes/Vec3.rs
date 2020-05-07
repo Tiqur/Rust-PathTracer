@@ -156,9 +156,9 @@ impl Vec3 {
     // multiply float
     pub fn mulF(&self, other: f32) -> Vec3 {
         return Vec3 {
-            x: self.y * other,
-            y: self.z * other,
-            z: self.x * other
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other
         }
     }
 }

@@ -105,18 +105,34 @@ impl Scene {
         }
 
         if record.hit {
-            // send diffuse rays
-            let target = (record.closest_point + record.normal + self.random_in_hemisphere(record.normal)) - record.closest_point;
-            let new_ray = Ray { origin: record.closest_point, direction: target};
-            return self.ray_trace(new_ray, recursion_depth - 1).mul(0.5);
+            match record.object {
+                ObjectEnum::Sphere(sphere) => {
+                    match sphere.material.material {
+                        MaterialEnum::Diffuse(material) => {
+                            // send diffuse ray
+                            let target = (record.closest_point + record.normal + self.random_in_hemisphere(record.normal)) - record.closest_point;
+                            let new_ray = Ray { origin: record.closest_point, direction: target};
+                            return record.color * self.ray_trace(new_ray, recursion_depth - 1).mulF(0.5);
+                        },
+                        MaterialEnum::Mirror(material) => {
+                            // send reflection ray
+                            let dn = 2.0 * ray.direction.dot(record.normal);
+                            let reflection_dir = ray.direction - record.normal.mulF(dn);
+                            let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir.to_unit_vector() };
+                            return self.ray_trace(reflection_ray, recursion_depth - 1)
+                        },
+                        _ => {}
+                    }
+                }
+            }
+
         }
 
 
 
 
-
         let t = 0.5 * ( ray.direction.to_unit_vector().y + 1.0);
-        let sky_color = Rgb{ r: 1.0, g: 1.0, b: 1.0 }.mul(1.0-t) + Rgb{ r: 0.5, g: 0.7, b: 1.7 }.mul(t);
+        let sky_color = Rgb{ r: 1.0, g: 1.0, b: 1.0 }.mulF(1.0-t) + Rgb{ r: 0.5, g: 0.7, b: 1.0 }.mulF(t);
         return sky_color;
     }
 
@@ -179,13 +195,14 @@ impl Scene {
                     ray_time_sum += ray_time_start.elapsed().as_secs_f64();
                 }
 
+                // add gamma correction
                 let scale = 1.0 / samples_per_pixel as f32;
-                let ree = Rgb{
+                let gamma_corrected_pixel_color = Rgb{
                     r: (pixel_color.r * scale).sqrt(),
                     g: (pixel_color.g * scale).sqrt(),
                     b: (pixel_color.b * scale).sqrt()
                 };
-                window.secondary_buffer[index] = ree.to_int();
+                window.secondary_buffer[index] = gamma_corrected_pixel_color.to_int();
                 index += 1;
             }
         }

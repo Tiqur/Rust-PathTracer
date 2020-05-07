@@ -15,7 +15,7 @@ use crate::PathTracing::Classes::Material::Material;
 use crate::PathTracing::Enums::TextureEnum::TextureEnum;
 use crate::PathTracing::Textures::Base::Base;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
-use crate::PathTracing::Materials::Diffuse::Matte;
+use crate::PathTracing::Materials::Diffuse::Diffuse;
 use crate::PathTracing::Textures::Checkerboard::Checkerboard;
 use minifb::WindowOptions;
 use crate::PathTracing::Classes::Light::Light;
@@ -24,7 +24,7 @@ use crate::PathTracing::Materials::Mirror::Mirror;
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 10;
+    let samples_per_pixel = 100;
     let show_statistics = true;
     let recursion_depth = 20;
     // let threads = 2;  will multithread eventually
@@ -41,7 +41,7 @@ fn main() {
         camera: Camera {
             pos: Vec3 {
                 x: 0.0,
-                y: 0.0,
+                y: 4.0,
                 z: -60.0
             },
             fov: 30.0,
@@ -50,13 +50,31 @@ fn main() {
         objects: vec![
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
-                    x: 0.0,
-                    y: 0.4,
+                    x: -7.0,
+                    y: 1.0,
                     z: 0.0
                 },
                 radius: 5.0,
                 material: Material {
                     material: MaterialEnum::Mirror(Mirror {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 0.0,
+                            g: 1.0,
+                            b: 0.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Sphere(Sphere {
+                pos: Vec3 {
+                    x: 7.0,
+                    y: 1.0,
+                    z: 0.0
+                },
+                radius: 5.0,
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
                     texture: TextureEnum::Base(Base {
                         color: Rgb {
                             r: 0.0,
@@ -75,13 +93,20 @@ fn main() {
                 },
                 radius: 500.0,
                 material: Material {
-                    material: MaterialEnum::Matte(Matte {}),
-                    texture: TextureEnum::Base(Base {
-                        color: Rgb {
-                            r: 0.3,
-                            g: 0.3,
-                            b: 0.3
-                        }
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Checkerboard(Checkerboard {
+                        color1: Rgb {
+                            r: 0.0,
+                            g: 0.0,
+                            b: 0.0
+                        },
+                        color2: Rgb {
+                            r: 0.878,
+                            g: 0.878,
+                            b: 0.784
+                        },
+                        size1: 1.0,
+                        size2: 1.0
                     })
                 }
             })

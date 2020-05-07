@@ -1,8 +1,8 @@
-use crate::PathTracing::Materials::Diffuse::Matte;
+use crate::PathTracing::Materials::Diffuse::Diffuse;
 use crate::PathTracing::Materials::Mirror::Mirror;
 
 #[derive(Copy, Clone)]
 pub enum MaterialEnum {
-    Matte(Matte),
+    Diffuse(Diffuse),
     Mirror(Mirror)
 }
