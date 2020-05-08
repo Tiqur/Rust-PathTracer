@@ -16,6 +16,7 @@ use crate::PathTracing::Classes::Material::Material;
 use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 use std::ops::Mul;
 use std::f32::consts::PI;
+use std::sync::{Mutex, Arc};
 
 pub struct Scene {
     pub camera: Camera,
@@ -27,30 +28,6 @@ pub struct Scene {
 
 impl Scene {
 
-    fn get_background_gradient(&self, window: &mut Window) -> Vec<Rgb> {
-        let mut gradient_rgb_buffer = Vec::new();
-
-        let color1 = Rgb {
-            r: 0.35,
-            g: 0.35,
-            b: 0.7
-        };
-
-        let color2 = Rgb {
-            r: 1.0,
-            g: 1.0,
-            b: 1.0
-        };
-
-        for y in 0..window.height {
-            for _x in 0..window.width {
-                gradient_rgb_buffer.push(color1.mix(&color2, y as f32 / window.width as f32));
-            }
-        }
-
-        return gradient_rgb_buffer;
-
-    }
 
     fn get_closest_hit_record(&self, objects: &Vec<ObjectEnum>, ray: Ray) -> HitRecord {
         let mut record = HitRecord {..Default::default()};
@@ -156,13 +133,11 @@ impl Scene {
         return sky_color;
     }
 
-    pub fn render(&self, window: &mut Window, samples_per_pixel: i32, show_statistics: bool, recursion_depth: i32) {
+    pub fn render(&self, window: &Arc<Mutex<Window>>, samples_per_pixel: i32, show_statistics: bool, recursion_depth: i32) {
 
 
         // initialize rng generator
         let mut rng = rand::thread_rng();
-        // caches background values
-        let gradient_background_buffer = self.get_background_gradient(window);
 
         let mut ray_time_sum = 0.0;
 
@@ -175,7 +150,9 @@ impl Scene {
         println!("{}", style("Starting render...").cyan());
 
         // sends out rays
-        for y in 0..window.height {
+        let height = window.lock().unwrap().height;
+        let width = window.lock().unwrap().width;
+        for y in 0..height {
                 if show_statistics {
                     // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
                     let mut spaces_to_clear_line = "          ";
@@ -183,14 +160,14 @@ impl Scene {
                     // Also note to self: remember to edit this when adding more computation per ray ( like lighting etc )
                     term.move_cursor_to(0, 1);
                     let avg_ray_time = (ray_time_sum / (index + 1) as f64 ) / 1000.0;
-                    let remaining_rays = (window.width * window.height) - (index + window.width);
+                    let remaining_rays = (width * height) - (index + width);
                     println!("{} (ms): {}", style("Average ray calculation time").cyan(), style(avg_ray_time).yellow());
                     println!("{}: {}{}", style("Rays remaining").cyan(), style(remaining_rays).yellow(), spaces_to_clear_line);
                     println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((avg_ray_time * remaining_rays as f64) * 1000.0).yellow(), spaces_to_clear_line);
-                    println!("{}", progress_bar(y as i32, window.height as i32, 30));
+                    println!("{}", progress_bar(y as i32, height as i32, 30));
                 }
 
-            for x in 0..window.width {
+            for x in 0..width {
 
                 // actual pixel color after anti aliasing
                 let mut pixel_color = Rgb {..Default::default()};
@@ -207,7 +184,7 @@ impl Scene {
                         y_rand += rng.gen_range(0.0, 1.0);
                     }
 
-                    let ray = self.camera.get_ray(x_rand, y_rand, &window);
+                    let ray = self.camera.get_ray(x_rand, y_rand, &window.lock().unwrap());
 
                     //cast ray
                     pixel_color += self.ray_trace(ray, recursion_depth);
@@ -222,7 +199,7 @@ impl Scene {
                     g: (pixel_color.g * scale).sqrt(),
                     b: (pixel_color.b * scale).sqrt()
                 };
-                window.secondary_buffer[index] = gamma_corrected_pixel_color.to_int();
+                window.lock().unwrap().buffer[index] = gamma_corrected_pixel_color.to_int();
                 index += 1;
             }
         }

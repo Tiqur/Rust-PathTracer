@@ -4,15 +4,11 @@ use crate::Classes::Point2D::Point2D;
 pub struct Window {
     pub width: usize,
     pub height: usize,
-    pub primary_buffer: Vec<u32>,
-    pub secondary_buffer: Vec<u32>
+    pub buffer: Vec<u32>
 }
 
 impl Window {
-    // copies secondary buffer to primary buffer
-    pub fn swap_buffers(&mut self) {
-        self.primary_buffer = self.secondary_buffer.clone()
-    }
+
 
     // sets pixel color for specified position on window ( x, y )
     pub fn dot(&mut self, point: Point2D, color: &Rgb) {
@@ -22,7 +18,7 @@ impl Window {
 
         let index = (y * self.width as i32 + x) as usize;
         if x < self.width as i32 && x > 0 && y < self.height as i32 && y > 0 {
-            self.secondary_buffer[index] = c;
+            self.buffer[index] = c;
         }
 
     }
@@ -61,13 +57,13 @@ impl Window {
 
     // sets background to specified color
     pub fn set_background(&mut self, color: Rgb) {
-        for i in self.secondary_buffer.iter_mut() {
+        for i in self.buffer.iter_mut() {
             *i = color.to_int();
         }
     }
 
     // same as set_background but more efficient
     pub fn set_buffer(&mut self, vec: Vec<u32>) {
-        self.secondary_buffer = vec.clone()
+        self.buffer = vec.clone()
     }
 }

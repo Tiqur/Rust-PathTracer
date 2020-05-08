@@ -21,21 +21,21 @@ use minifb::WindowOptions;
 use crate::PathTracing::Classes::Light::Light;
 use crate::PathTracing::Materials::Mirror::Mirror;
 use crate::PathTracing::Objects::Triangle::Triangle;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 20;
+    let samples_per_pixel = 100;
     let show_statistics = true;
-    let recursion_depth = 20;
+    let recursion_depth = 50;
     // let threads = 2;  will multithread eventually
 
-    let mut window = Classes::Window::Window {
+    let mut window = Arc::new(Mutex::new(Classes::Window::Window {
         width,
         height,
-        primary_buffer: vec![0; width * height],
-        secondary_buffer: vec![0; width * height]
-    };
+        buffer: vec![0; width * height]
+    }));
 
 
     let scene = Scene {
@@ -153,9 +153,10 @@ fn main() {
         ]
     };
 
-
-
-        scene.render(&mut window, samples_per_pixel, show_statistics, recursion_depth);
+        let mut window_clone = Arc::clone(&window);
+        let secondary_thread = std::thread::spawn(move || {
+            scene.render(&window_clone, samples_per_pixel, show_statistics, recursion_depth);
+        });
 
 
 
@@ -170,14 +171,15 @@ fn main() {
                 panic!("{}", e)
             });
 
-
         while minifb_window.is_open() && !minifb_window.is_key_down(minifb::Key::Escape) {
-            window.swap_buffers();
-
-            minifb_window.update_with_buffer(&window.primary_buffer, width, height)
+            std::thread::sleep(Duration::from_secs_f32(0.01));
+           // window.lock().unwrap().swap_buffers();
+            // I know this isn't good practice
+            minifb_window.update_with_buffer(&window.lock().unwrap().buffer, width, height)
                 .unwrap();
         }
-
+    // with this commented out, the secondary process will stop if window is closed
+    //secondary_thread.join().unwrap();
 
 }
 
