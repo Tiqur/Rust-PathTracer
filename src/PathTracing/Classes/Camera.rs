@@ -2,6 +2,7 @@ use crate::Classes::Vec3::Vec3;
 use crate::PathTracing::Classes::Ray::Ray;
 use crate::Classes::Window::Window;
 
+#[derive(Copy, Clone)]
 pub struct Camera {
     pub pos: Vec3,
     pub fov: f32,

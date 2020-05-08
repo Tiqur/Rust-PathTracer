@@ -4,7 +4,8 @@ use crate::Classes::Point2D::Point2D;
 pub struct Window {
     pub width: usize,
     pub height: usize,
-    pub buffer: Vec<u32>
+    pub buffer: Vec<u32>,
+    pub running_threads: i32
 }
 
 impl Window {

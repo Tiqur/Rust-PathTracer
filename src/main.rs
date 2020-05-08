@@ -21,7 +21,8 @@ use minifb::WindowOptions;
 use crate::PathTracing::Classes::Light::Light;
 use crate::PathTracing::Materials::Mirror::Mirror;
 use crate::PathTracing::Objects::Triangle::Triangle;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
+use console::style;
 
 fn main() {
     let width = 1200;
@@ -29,16 +30,17 @@ fn main() {
     let samples_per_pixel = 100;
     let show_statistics = true;
     let recursion_depth = 50;
-    // let threads = 2;  will multithread eventually
+    let thread_count = 6;
 
     let mut window = Arc::new(Mutex::new(Classes::Window::Window {
         width,
         height,
-        buffer: vec![0; width * height]
+        buffer: vec![0; width * height],
+        running_threads: 0
     }));
 
 
-    let scene = Scene {
+    let scene = Arc::new(Scene {
         camera: Camera {
             pos: Vec3 {
                 x: 0.0,
@@ -48,7 +50,7 @@ fn main() {
             fov: 30.0,
             aspect_ratio: width as f32 / height as f32
         },
-        objects: vec![
+        objects: [
             ObjectEnum::Triangle(Triangle{
                 vec1: Vec3 {
                     x: -2.0,
@@ -139,7 +141,7 @@ fn main() {
                 }
             })
         ],
-        lights: vec![
+        lights: [
             Light{ pos: Vec3 {
                 x: -40.0,
                 y: 30.0,
@@ -151,12 +153,28 @@ fn main() {
                 z: 0.0
             }}
         ]
-    };
+    });
 
-        let mut window_clone = Arc::clone(&window);
-        let secondary_thread = std::thread::spawn(move || {
-            scene.render(&window_clone, samples_per_pixel, show_statistics, recursion_depth);
-        });
+
+        let now = Instant::now();
+        println!("{}", style("Starting render...").cyan());
+
+        //how large the chunk is ( if thread count is 2 and height is 800, the chunk size will be 400 )
+        let chunk_size = height / thread_count as usize;
+        // spawns threads
+        for chunk in 0..height / chunk_size {
+            window.lock().unwrap().running_threads += 1;
+            let mut window_clone = Arc::clone(&window);
+            let mut scene_clone = Arc::clone(&scene);
+            std::thread::spawn(move || {
+                let min = chunk * chunk_size;
+                let max = (chunk_size * (chunk + 1) );
+                scene_clone.render(window_clone, (min, max), samples_per_pixel, show_statistics, recursion_depth);
+            });
+        }
+
+
+
 
 
 
@@ -172,14 +190,22 @@ fn main() {
             });
 
         while minifb_window.is_open() && !minifb_window.is_key_down(minifb::Key::Escape) {
-            std::thread::sleep(Duration::from_secs_f32(0.01));
-           // window.lock().unwrap().swap_buffers();
             // I know this isn't good practice
+            std::thread::sleep(Duration::from_secs_f32(0.01));
+
+            if window.lock().unwrap().running_threads == 0 {
+                println!("{}: {}", style("Render time").cyan(), style(format!("{}ms", now.elapsed().as_millis())).green());
+                window.lock().unwrap().running_threads -= 1;
+            }
             minifb_window.update_with_buffer(&window.lock().unwrap().buffer, width, height)
                 .unwrap();
         }
-    // with this commented out, the secondary process will stop if window is closed
-    //secondary_thread.join().unwrap();
 
+
+
+        // if this is commented out, the secondary process will stop if window is closed
+        // for handle in handles {
+        //     handle.join().unwrap()
+        // }
 }
 
