@@ -17,6 +17,7 @@ use crate::PathTracing::Enums::MaterialEnum::MaterialEnum;
 use std::ops::Mul;
 use std::f32::consts::PI;
 use std::sync::{Mutex, Arc};
+use crate::PathTracing::Classes::Statistics::Statistics;
 
 #[derive(Copy, Clone)]
 pub struct Scene {
@@ -128,79 +129,79 @@ impl Scene {
 
 
 
-
         let t = 0.5 * ( ray.direction.to_unit_vector().y + 1.0);
         let sky_color = Rgb{ r: 1.0, g: 1.0, b: 1.0 }.mulF(1.0-t) + Rgb{ r: 0.5, g: 0.7, b: 1.0 }.mulF(t);
         return sky_color;
     }
 
 
-    pub fn render(self, window: Arc<Mutex<Window>>, range: (usize, usize), samples_per_pixel: i32, show_statistics: bool, recursion_depth: i32) {
+    pub fn render(self, window: Arc<Mutex<Window>>, range: (usize, usize), samples_per_pixel: i32, recursion_depth: i32, statistics: Arc<Mutex<Statistics>>) {
 
         let mut ray_time_sum = 0.0;
-
-        let mut rng = rand::thread_rng();
-        let term = Term::stdout();
-
-        term.clear_screen();
-        term.hide_cursor();
-
+        let show_stats = statistics.lock().unwrap().show_stats;
         let width = window.lock().unwrap().width;
+        let mut rng = rand::thread_rng();
         let mut index = range.0 * width;
 
                 // sends our rays
                 for y in range.0..range.1 {
-                    // if show_statistics {
-                    //     // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
-                    //     let mut spaces_to_clear_line = "          ";
-                    //     // I know this is unoptimized but the more calculations per pixel, the less this will matter
-                    //     // Also note to self: remember to edit this when adding more computation per ray ( like lighting etc )
-                    //     term.move_cursor_to(0, 1);
-                    //     let avg_ray_time = (ray_time_sum / (index + 1) as f64 ) / 1000.0;
-                    //     let remaining_rays = (width * height) - (index + width);
-                    //     println!("{} (ms): {}", style("Average ray calculation time").cyan(), style(avg_ray_time).yellow());
-                    //     println!("{}: {}{}", style("Rays remaining").cyan(), style(remaining_rays).yellow(), spaces_to_clear_line);
-                    //     println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((avg_ray_time * remaining_rays as f64) * 1000.0).yellow(), spaces_to_clear_line);
-                    //     println!("{}", progress_bar(y as i32, height as i32, 30));
-                    // }
 
                     for x in 0..width {
-
+                        let pixel_time_start = Instant::now();
                         // actual pixel color after anti aliasing
                         let mut pixel_color = Rgb {..Default::default()};
 
                         // anti aliasing
-                        for i in 0..samples_per_pixel {
+                        for _ in 0..samples_per_pixel {
                             let ray_time_start = Instant::now();
-
                             let mut x_rand = x as f32;
                             let mut y_rand = y as f32;
-
                             if samples_per_pixel > 1 {
                                 x_rand += rng.gen_range(0.0, 1.0);
                                 y_rand += rng.gen_range(0.0, 1.0);
                             }
-
+                            // cast ray
                             let ray = self.camera.get_ray(x_rand, y_rand, &window.lock().unwrap());
-
-                            //cast ray
+                            // pixel color
                             pixel_color += self.ray_trace(ray, recursion_depth);
                             ray_time_sum += ray_time_start.elapsed().as_secs_f64();
                         }
 
                         // add gamma correction
                         let scale = 1.0 / samples_per_pixel as f32;
-                        let gamma_corrected_pixel_color = Rgb{
-                            r: (pixel_color.r * scale).sqrt(),
-                            g: (pixel_color.g * scale).sqrt(),
-                            b: (pixel_color.b * scale).sqrt()
-                        };
+                        let gamma_corrected_pixel_color = pixel_color.mulF(scale).square_root();;
                         window.lock().unwrap().buffer[index] = gamma_corrected_pixel_color.to_int();
                         index += 1;
+
+
+                        if show_stats {
+                            let mut locked_statistics = statistics.lock().unwrap();
+                            locked_statistics.remaining_pixels -= 1 as i32;
+                            locked_statistics.average_ray_calc_time = (locked_statistics.average_ray_calc_time + ray_time_sum / (index - range.0 * width) as f64) / 2.0;
+                            locked_statistics.average_pixel_calc_time = (locked_statistics.average_ray_calc_time + ray_time_sum / (index - range.0 * width) as f64) / 2.0;
+                        }
                     }
+
+                }
+                if show_stats {
+                    statistics.lock().unwrap().running_threads -= 1;
                 }
 
-        window.lock().unwrap().running_threads -= 1;
-
+        // if show_statistics {
+        //     // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
+        //     let mut spaces_to_clear_line = "          ";
+        //     // I know this is unoptimized but the more calculations per pixel, the less this will matter
+        //     // Also note to self: remember to edit this when adding more computation per ray ( like lighting etc )
+        //     term.move_cursor_to(0, 1);
+        //     let avg_ray_time = (ray_time_sum / (index + 1) as f64 ) / 1000.0;
+        //     let remaining_rays = (width * height) - (index + width);
+        //     println!("{} (ms): {}", style("Average ray calculation time").cyan(), style(avg_ray_time).yellow());
+        //     println!("{}: {}{}", style("Rays remaining").cyan(), style(remaining_rays).yellow(), spaces_to_clear_line);
+        //     println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((avg_ray_time * remaining_rays as f64) * 1000.0).yellow(), spaces_to_clear_line);
+        //     println!("{}", progress_bar(y as i32, height as i32, 30));
+        // }
     }
+
+
+
 }

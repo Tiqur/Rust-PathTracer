@@ -4,3 +4,4 @@ pub mod Camera;
 pub mod HitRecord;
 pub mod Material;
 pub mod Light;
+pub mod Statistics;

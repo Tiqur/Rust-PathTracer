@@ -22,16 +22,23 @@ use crate::PathTracing::Classes::Light::Light;
 use crate::PathTracing::Materials::Mirror::Mirror;
 use crate::PathTracing::Objects::Triangle::Triangle;
 use std::sync::{Arc, Mutex};
-use console::style;
+use console::{style, Term};
+use crate::PathTracing::Classes::Statistics::Statistics;
+use crate::PathTracing::Functions::progress_bar::progress_bar;
 
 fn main() {
     let width = 1200;
     let height = 800;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 20;
     let show_statistics = true;
     let recursion_depth = 50;
     let thread_count = 6;
-
+    let now = Instant::now();
+    let mut render_time= now.elapsed().as_millis();
+    let term = Term::stdout();
+    term.clear_screen();
+    term.hide_cursor();
+    
     let mut window = Arc::new(Mutex::new(Classes::Window::Window {
         width,
         height,
@@ -156,27 +163,30 @@ fn main() {
     });
 
 
-        let now = Instant::now();
         println!("{}", style("Starting render...").cyan());
-
         //how large the chunk is ( if thread count is 2 and height is 800, the chunk size will be 400 )
         let chunk_size = height / thread_count as usize;
-        // spawns threads
+        // initialize statistics struct
+        let statistics = Arc::new(Mutex::new(Statistics {
+            show_stats: show_statistics,
+            running: true,
+            average_ray_calc_time: 0.0,
+            average_pixel_calc_time: 0.0,
+            remaining_pixels: (height * width) as i32,
+            running_threads: thread_count
+        }));
+        // spawn threads
         for chunk in 0..height / chunk_size {
-            window.lock().unwrap().running_threads += 1;
+            if chunk as i32 == thread_count - 1 {  }
             let mut window_clone = Arc::clone(&window);
             let mut scene_clone = Arc::clone(&scene);
+            let mut stats_clone = Arc::clone(&statistics);
             std::thread::spawn(move || {
                 let min = chunk * chunk_size;
-                let max = (chunk_size * (chunk + 1) );
-                scene_clone.render(window_clone, (min, max), samples_per_pixel, show_statistics, recursion_depth);
+                let max = if chunk as i32 == thread_count - 1 { height } else { chunk_size * (chunk + 1) };
+                scene_clone.render(window_clone, (min, max), samples_per_pixel, recursion_depth, stats_clone);
             });
         }
-
-
-
-
-
 
 
         let mut minifb_window = minifb::Window::new(
@@ -189,23 +199,36 @@ fn main() {
                 panic!("{}", e)
             });
 
+
         while minifb_window.is_open() && !minifb_window.is_key_down(minifb::Key::Escape) {
             // I know this isn't good practice
-            std::thread::sleep(Duration::from_secs_f32(0.01));
+            std::thread::sleep(Duration::from_millis(10));
+            if statistics.lock().unwrap().running_threads != 0 {
+                render_time = now.elapsed().as_millis();
+            }
+            if show_statistics {
+                // this is just to clear the rest of the line when updating terminal ( Using this instead of just clearing it to prevent flickering )
+                let mut spaces_to_clear_line = "          ";
+                let average_pixel_calc_time = statistics.lock().unwrap().average_pixel_calc_time;
+                let average_ray_calc_time = statistics.lock().unwrap().average_ray_calc_time;
+                let pixels_remaining = statistics.lock().unwrap().remaining_pixels;
+                let running_threads = statistics.lock().unwrap().running_threads;
+                let total_pixels = (width * height) as i32;
+                term.move_cursor_to(0, 1);
+                println!("{}", progress_bar(total_pixels - pixels_remaining, total_pixels, 30));
+                println!("{} (ms): {}{}", style("Average pixel calculation time").cyan(), style(average_pixel_calc_time).yellow(), spaces_to_clear_line);
+                println!("{} (ms): {}{}", style("Average ray calculation time").cyan(), style(average_ray_calc_time).yellow(), spaces_to_clear_line);
+                println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((average_pixel_calc_time * pixels_remaining as f64)).yellow(), spaces_to_clear_line);
+                println!("{}: {}{}", style("Pixels remaining").cyan(), style(statistics.lock().unwrap().remaining_pixels).yellow(), spaces_to_clear_line);
+                println!("{}: {}{}", style("Threads working").cyan(), style(running_threads).yellow(), spaces_to_clear_line);
+                println!("{}: {}", style("Render time").cyan(), style(format!("{}ms", render_time)).green());
 
-            if window.lock().unwrap().running_threads == 0 {
-                println!("{}: {}", style("Render time").cyan(), style(format!("{}ms", now.elapsed().as_millis())).green());
-                window.lock().unwrap().running_threads -= 1;
+            } else {
+                statistics.lock().unwrap().running = false;
             }
             minifb_window.update_with_buffer(&window.lock().unwrap().buffer, width, height)
                 .unwrap();
         }
 
-
-
-        // if this is commented out, the secondary process will stop if window is closed
-        // for handle in handles {
-        //     handle.join().unwrap()
-        // }
 }
 
