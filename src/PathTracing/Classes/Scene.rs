@@ -22,7 +22,7 @@ use crate::PathTracing::Classes::Statistics::Statistics;
 #[derive(Copy, Clone)]
 pub struct Scene {
     pub camera: Camera,
-    pub objects: [ObjectEnum; 4],
+    pub objects: [ObjectEnum; 11],
     pub lights: [Light; 0] // again this is temp
 }
 
@@ -66,7 +66,7 @@ impl Scene {
         return Vec3 {
             x: r * a.cos(),
             y: r * a.sin(),
-            z: z
+            z
         }
     }
 

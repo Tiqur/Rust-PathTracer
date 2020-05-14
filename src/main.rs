@@ -32,7 +32,7 @@ fn main() {
     let height = 800;
     let samples_per_pixel = 20;
     let show_statistics = true;
-    let recursion_depth = 50;
+    let recursion_depth = 100;
     let thread_count = 6;
     let now = Instant::now();
     let mut render_time= now.elapsed().as_millis();
@@ -53,20 +53,21 @@ fn main() {
             pos: Vec3 {
                 x: 0.0,
                 y: 4.0,
-                z: -60.0
+                z: -70.0
             },
             fov: 30.0,
             aspect_ratio: width as f32 / height as f32
         },
         objects: [
+            // floor
             ObjectEnum::Rectangle(Rect {
                 vec1: Vec3 {
-                    x: -20.0,
+                    x: -30.0,
                     y: -5.0,
                     z: -20.0
                 },
                 vec2: Vec3 {
-                    x: -20.0,
+                    x: -30.0,
                     y: -5.0,
                     z: 20.0
                 },
@@ -93,38 +94,229 @@ fn main() {
                                 g: 1.0,
                                 b: 1.0
                             },
-                            size1: 1.0,
-                            size2: 1.0
+                            size1: 0.6,
+                            size2: 0.6
                         })
                     }
             }),
+            // octahedron
             ObjectEnum::Triangle(Triangle{
                 vec1: Vec3 {
-                    x: -2.0,
-                    y: 20.0,
-                    z: -30.0
+                    x: -16.0,
+                    y: 0.0,
+                    z: 5.0
                 },
                 vec2: Vec3 {
-                    x: -30.0,
-                    y: 4.0,
-                    z: -10.0
+                    x: -19.5,
+                    y: 5.0,
+                    z: 0.0
                 },
                 vec3: Vec3 {
-                    x: 10.0,
-                    y: 3.0,
-                    z: 50.0
+                    x: -16.0,
+                    y: 0.0,
+                    z: -5.0
                 },
                 material: Material {
-                    material: MaterialEnum::Mirror(Mirror {}),
+                    material: MaterialEnum::Diffuse(Diffuse {}),
                     texture: TextureEnum::Base(Base {
                         color: Rgb {
-                            r: 0.0,
+                            r: 1.0,
+                            g: 0.0,
+                            b: 1.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -16.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: 5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
                             g: 1.0,
                             b: 0.0
                         }
                     })
                 }
             }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: 5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
+                            g: 0.0,
+                            b: 1.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -16.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: 5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
+                            g: 1.0,
+                            b: 0.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -16.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: -5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -16.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
+                            g: 1.0,
+                            b: 0.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -16.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: -5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
+                            g: 0.0,
+                            b: 1.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: 5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: -5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
+                            g: 1.0,
+                            b: 0.0
+                        }
+                    })
+                }
+            }),
+            ObjectEnum::Triangle(Triangle{
+                vec1: Vec3 {
+                    x: -16.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                vec2: Vec3 {
+                    x: -19.5,
+                    y: -5.0,
+                    z: 0.0
+                },
+                vec3: Vec3 {
+                    x: -23.0,
+                    y: 0.0,
+                    z: -5.0
+                },
+                material: Material {
+                    material: MaterialEnum::Diffuse(Diffuse {}),
+                    texture: TextureEnum::Base(Base {
+                        color: Rgb {
+                            r: 1.0,
+                            g: 0.0,
+                            b: 1.0
+                        }
+                    })
+                }
+            }),
+            // reflective sphere
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
                     x: -7.0,
@@ -143,6 +335,7 @@ fn main() {
                     })
                 }
             }),
+            // diffuse sphere
             ObjectEnum::Sphere(Sphere {
                 pos: Vec3 {
                     x: 7.0,
