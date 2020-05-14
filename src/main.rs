@@ -25,6 +25,7 @@ use std::sync::{Arc, Mutex};
 use console::{style, Term};
 use crate::PathTracing::Classes::Statistics::Statistics;
 use crate::PathTracing::Functions::progress_bar::progress_bar;
+use crate::PathTracing::Objects::Rectangle::Rect;
 
 fn main() {
     let width = 1200;
@@ -58,6 +59,45 @@ fn main() {
             aspect_ratio: width as f32 / height as f32
         },
         objects: [
+            ObjectEnum::Rectangle(Rect {
+                vec1: Vec3 {
+                    x: -20.0,
+                    y: -5.0,
+                    z: -20.0
+                },
+                vec2: Vec3 {
+                    x: -20.0,
+                    y: -5.0,
+                    z: 20.0
+                },
+                vec3: Vec3 {
+                    x: 20.0,
+                    y: -5.0,
+                    z: 20.0
+                },
+                vec4: Vec3 {
+                    x: 20.0,
+                    y: -5.0,
+                    z: -20.0
+            },
+                material: Material {
+                        material: MaterialEnum::Diffuse(Diffuse {}),
+                        texture: TextureEnum::Checkerboard(Checkerboard {
+                            color1: Rgb {
+                                r: 0.0,
+                                g: 0.0,
+                                b: 0.0
+                            },
+                            color2: Rgb {
+                                r: 1.0,
+                                g: 1.0,
+                                b: 1.0
+                            },
+                            size1: 1.0,
+                            size2: 1.0
+                        })
+                    }
+            }),
             ObjectEnum::Triangle(Triangle{
                 vec1: Vec3 {
                     x: -2.0,
@@ -120,46 +160,9 @@ fn main() {
                         }
                     })
                 }
-            }),
-
-            ObjectEnum::Sphere(Sphere {
-                pos: Vec3 {
-                    x: 0.0,
-                    y: -505.0,
-                    z: 0.0
-                },
-                radius: 500.0,
-                material: Material {
-                    material: MaterialEnum::Diffuse(Diffuse {}),
-                    texture: TextureEnum::Checkerboard(Checkerboard {
-                        color1: Rgb {
-                            r: 0.0,
-                            g: 0.0,
-                            b: 0.0
-                        },
-                        color2: Rgb {
-                            r: 0.878,
-                            g: 0.878,
-                            b: 0.784
-                        },
-                        size1: 1.0,
-                        size2: 1.0
-                    })
-                }
             })
         ],
-        lights: [
-            Light{ pos: Vec3 {
-                x: -40.0,
-                y: 30.0,
-                z: 0.0
-            }},
-            Light{ pos: Vec3 {
-                x: 40.0,
-                y: 30.0,
-                z: 0.0
-            }}
-        ]
+        lights: []
     });
 
 
@@ -218,7 +221,7 @@ fn main() {
                 println!("{}", progress_bar(total_pixels - pixels_remaining, total_pixels, 30));
                 println!("{} (ms): {}{}", style("Average pixel calculation time").cyan(), style(average_pixel_calc_time).yellow(), spaces_to_clear_line);
                 println!("{} (ms): {}{}", style("Average ray calculation time").cyan(), style(average_ray_calc_time).yellow(), spaces_to_clear_line);
-                println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style((average_pixel_calc_time * pixels_remaining as f64)).yellow(), spaces_to_clear_line);
+                println!("{}: {:.2}{}", style("Estimated seconds remaining").cyan(), style(average_pixel_calc_time * pixels_remaining as f64).yellow(), spaces_to_clear_line);
                 println!("{}: {}{}", style("Pixels remaining").cyan(), style(statistics.lock().unwrap().remaining_pixels).yellow(), spaces_to_clear_line);
                 println!("{}: {}{}", style("Threads working").cyan(), style(running_threads).yellow(), spaces_to_clear_line);
                 println!("{}: {}", style("Render time").cyan(), style(format!("{}ms", render_time)).green());

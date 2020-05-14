@@ -23,7 +23,7 @@ use crate::PathTracing::Classes::Statistics::Statistics;
 pub struct Scene {
     pub camera: Camera,
     pub objects: [ObjectEnum; 4],
-    pub lights: [Light; 2] // again this is temp
+    pub lights: [Light; 0] // again this is temp
 }
 
 
@@ -41,6 +41,9 @@ impl Scene {
                 },
                 ObjectEnum::Triangle(triangle) => {
                     object_hit_record =  triangle.intersection(ray);
+                }
+                ObjectEnum::Rectangle(rect) => {
+                    object_hit_record =  rect.intersection(ray);
                 }
             }
             // if intersection
@@ -121,8 +124,24 @@ impl Scene {
                             return self.ray_trace(reflection_ray, recursion_depth - 1)
                         }
                     }
+                },
+                ObjectEnum::Rectangle(rect) => {
+                    match rect.material.material {
+                        MaterialEnum::Diffuse(material) => {
+                            // send diffuse ray
+                            let target = (record.closest_point + record.normal + self.random_in_hemisphere(record.normal)) - record.closest_point;
+                            let new_ray = Ray { origin: record.closest_point, direction: target};
+                            return record.color * self.ray_trace(new_ray, recursion_depth - 1).mulF(0.5);
+                        },
+                        MaterialEnum::Mirror(material) => {
+                            // send reflection ray
+                            let dn = 2.0 * ray.direction.dot(record.normal);
+                            let reflection_dir = ray.direction - record.normal.mulF(dn);
+                            let reflection_ray = Ray { origin: record.closest_point, direction: reflection_dir.to_unit_vector() };
+                            return self.ray_trace(reflection_ray, recursion_depth - 1)
+                        }
+                    }
                 }
-
             }
 
         }

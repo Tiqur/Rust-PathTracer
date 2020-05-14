@@ -19,10 +19,6 @@ pub struct Sphere {
     pub material: Material
 }
 
-impl Sphere {
-
-}
-
 
 impl Shape for Sphere {
     fn intersection(&self, ray: Ray) -> HitRecord {  // thanks legend
@@ -58,10 +54,17 @@ impl Shape for Sphere {
         let raw_u = theta / (2.0 / PI);
         let u = 1.0 - (raw_u + 0.5);
         let v = 1.0 - (phi / PI);
-        //return self.material.uv_pattern_at(Point2D {x: u, y: v})
-        return self.material.uv_pattern_at(Point2D {x: p.x, y: p.z})
+        return self.material.uv_pattern_at(Point2D {x: u, y: v})
+        //return self.material.uv_pattern_at(Point2D {x: p.x, y: p.z})
     }
 
+    fn trace(&self, ray: Ray) -> bool {
+        let oc = ray.origin - self.pos;
+        let b = ray.direction.dot(oc);
+        let c = oc.dot(oc) - self.radius * self.radius;
+        let mut delta = b * b - c;
+        return delta > 0.0;
+    }
 }
 
 

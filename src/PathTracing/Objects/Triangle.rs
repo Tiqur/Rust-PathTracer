@@ -61,4 +61,29 @@ impl Shape for Triangle {
     fn get_uv_at(&self, p: Vec3) -> Rgb {
         return self.material.uv_pattern_at(Point2D {x: p.x, y: p.z})
     }
+
+    fn trace(&self, ray: Ray) -> bool {
+        let vertex0 = self.vec1;
+        let vertex1 = self.vec2;
+        let vertex2 = self.vec3;
+        let edge1 = vertex1 - vertex0;
+        let edge2 = vertex2 - vertex0;
+        let h = ray.direction.cross(edge2);
+        let a = edge1.dot(h);
+        if a > -EPSILON && a < EPSILON {
+            return false;
+        }
+        let f = 1.0 / a;
+        let s = ray.origin - vertex0;
+        let u = f * s.dot(h);
+        if u < 0.0 || u > 1.0 {
+            return false;
+        }
+        let q = s.cross(edge1);
+        let v = f * ray.direction.dot(q);
+        if v < 0.0 || u + v > 1.0 {
+            return false;
+        }
+        return f * edge2.dot(q) > EPSILON;
+    }
 }
